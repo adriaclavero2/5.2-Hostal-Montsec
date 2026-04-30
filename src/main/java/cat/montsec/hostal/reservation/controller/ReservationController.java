@@ -27,4 +27,14 @@ public class ReservationController {
         ReservationResponseDTO response = reservationService.createReservation(request, userEmail);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/my-reservations")
+    public ResponseEntity<java.util.List<ReservationResponseDTO>> getMyReservations(Principal principal) {
+
+        String userEmail = principal.getName();
+
+        java.util.List<ReservationResponseDTO> responses = reservationService.getUserReservations(userEmail);
+
+        return ResponseEntity.ok(responses);
+    }
 }

@@ -55,6 +55,16 @@ public class ReservationService {
         return mapToResponseDTO(savedReservation);
     }
 
+    public java.util.List<ReservationResponseDTO> getUserReservations(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Error: User not found"));
+
+        return reservationRepository.findByUserId(user.getId())
+                .stream()
+                .map(this::mapToResponseDTO)
+                .toList();
+    }
+
     private ReservationResponseDTO mapToResponseDTO(Reservation reservation) {
         return new ReservationResponseDTO(
                 reservation.getId(),
