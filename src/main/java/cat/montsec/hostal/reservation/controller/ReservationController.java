@@ -39,4 +39,14 @@ public class ReservationController {
         reservationService.cancelReservation(id, principal.getName());
         return ResponseEntity.ok("Reservation cancelled successfully");
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ReservationResponseDTO> updateReservation(
+            @PathVariable Long id,
+            @Valid @RequestBody ReservationRequestDTO request,
+            Principal principal) {
+
+        ReservationResponseDTO response = reservationService.updateReservation(id, request, principal.getName());
+        return ResponseEntity.ok(response);
+    }
 }

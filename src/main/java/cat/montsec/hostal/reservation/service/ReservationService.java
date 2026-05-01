@@ -90,6 +90,54 @@ public class ReservationService {
         reservationRepository.save(reservation);
     }
 
+    public ReservationResponseDTO updateReservation(Long reservationId, ReservationRequestDTO request, String userEmail) {
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Error: User not found"));
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Error: Reservation not found"));
+
+        boolean isAdmin = "ADMIN".equals(user.getRole());
+        boolean isOwner = reservation.getUser().getId().equals(user.getId());
+
+        if (!isAdmin && !isOwner) {
+            throw new RuntimeException("Error: You do not have permission to update this reservation");
+        }
+
+        RestaurantTable table = tableRepository.findById(request.getTableId())
+                .orElseThrow(() -> new RuntimeException("Error: Requested table does not exist"));
+
+        if (table.getCapacity() < request.getNumberOfPeople()) {
+            throw new RuntimeException("Error: The selected table only has capacity for " + table.getCapacity() + " people.");
+        }
+
+        boolean timeChanged = !reservation.getReservationTime().equals(request.getReservationTime());
+        boolean dateChanged = !reservation.getReservationDate().equals(request.getReservationDate());
+        boolean tableChanged = !reservation.getRestaurantTable().getId().equals(request.getTableId());
+
+        if (timeChanged || dateChanged || tableChanged) {
+            boolean isOccupied = reservationRepository.isTableReserved(
+                    request.getTableId(),
+                    request.getReservationDate(),
+                    request.getReservationTime()
+            );
+
+            if (isOccupied) {
+                throw new RuntimeException("Error: Sorry, the table is already reserved for that new date and time.");
+            }
+        }
+
+        reservation.setRestaurantTable(table);
+        reservation.setReservationDate(request.getReservationDate());
+        reservation.setReservationTime(request.getReservationTime());
+        reservation.setNumberOfPeople(request.getNumberOfPeople());
+
+        Reservation updatedReservation = reservationRepository.save(reservation);
+
+        return mapToResponseDTO(updatedReservation);
+    }
+
     private ReservationResponseDTO mapToResponseDTO(Reservation reservation) {
         return new ReservationResponseDTO(
                 reservation.getId(),
