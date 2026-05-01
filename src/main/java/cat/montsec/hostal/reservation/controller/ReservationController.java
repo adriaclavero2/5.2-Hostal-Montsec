@@ -28,13 +28,15 @@ public class ReservationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/my-reservations")
-    public ResponseEntity<java.util.List<ReservationResponseDTO>> getMyReservations(Principal principal) {
-
-        String userEmail = principal.getName();
-
-        java.util.List<ReservationResponseDTO> responses = reservationService.getUserReservations(userEmail);
-
+    @GetMapping
+    public ResponseEntity<java.util.List<ReservationResponseDTO>> getReservations(Principal principal) {
+        java.util.List<ReservationResponseDTO> responses = reservationService.getReservations(principal.getName());
         return ResponseEntity.ok(responses);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> cancelReservation(@PathVariable Long id, Principal principal) {
+        reservationService.cancelReservation(id, principal.getName());
+        return ResponseEntity.ok("Reservation cancelled successfully");
     }
 }

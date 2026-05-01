@@ -55,14 +55,39 @@ public class ReservationService {
         return mapToResponseDTO(savedReservation);
     }
 
-    public java.util.List<ReservationResponseDTO> getUserReservations(String userEmail) {
+    public java.util.List<ReservationResponseDTO> getReservations(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Error: User not found"));
 
-        return reservationRepository.findByUserId(user.getId())
-                .stream()
+        java.util.List<Reservation> reservations;
+
+        if ("ADMIN".equals(user.getRole())) {
+            reservations = reservationRepository.findAll();
+        } else {
+            reservations = reservationRepository.findByUserId(user.getId());
+        }
+
+        return reservations.stream()
                 .map(this::mapToResponseDTO)
                 .toList();
+    }
+
+    public void cancelReservation(Long reservationId, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Error: User not found"));
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Error: Reservation not found"));
+
+        boolean isAdmin = "ADMIN".equals(user.getRole());
+        boolean isOwner = reservation.getUser().getId().equals(user.getId());
+
+        if (!isAdmin && !isOwner) {
+            throw new RuntimeException("Error: You do not have permission to cancel this reservation");
+        }
+
+        reservation.setStatus(ReservationStatus.CANCELLED);
+        reservationRepository.save(reservation);
     }
 
     private ReservationResponseDTO mapToResponseDTO(Reservation reservation) {
