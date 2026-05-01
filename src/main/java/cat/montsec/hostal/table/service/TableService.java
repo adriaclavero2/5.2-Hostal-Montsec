@@ -2,6 +2,7 @@ package cat.montsec.hostal.table.service;
 
 import cat.montsec.hostal.table.dto.TableRequestDTO;
 import cat.montsec.hostal.table.dto.TableResponseDTO;
+import cat.montsec.hostal.table.mapper.TableMapper;
 import cat.montsec.hostal.table.model.RestaurantTable;
 import cat.montsec.hostal.table.repository.TableRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 public class TableService {
 
     private final TableRepository tableRepository;
+    private final TableMapper tableMapper;
 
     public TableResponseDTO createTable(TableRequestDTO request) {
         if (tableRepository.findByTableNumber(request.getTableNumber()).isPresent()) {
@@ -29,24 +31,14 @@ public class TableService {
 
         RestaurantTable savedTable = tableRepository.save(table);
 
-        return new TableResponseDTO(
-                savedTable.getId(),
-                savedTable.getTableNumber(),
-                savedTable.getCapacity(),
-                savedTable.getLocation()
-        );
+        return tableMapper.toResponseDTO(savedTable);
     }
 
     public List<TableResponseDTO> getAllTables() {
         List<RestaurantTable> tables = tableRepository.findAll();
 
         return tables.stream()
-                .map(table -> new TableResponseDTO(
-                        table.getId(),
-                        table.getTableNumber(),
-                        table.getCapacity(),
-                        table.getLocation()
-                ))
+                .map(tableMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 }
