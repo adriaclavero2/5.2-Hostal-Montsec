@@ -5,6 +5,7 @@ import cat.montsec.hostal.auth.repository.UserRepository;
 import cat.montsec.hostal.reservation.dto.ReservationRequestDTO;
 import cat.montsec.hostal.reservation.dto.ReservationResponseDTO;
 import cat.montsec.hostal.reservation.enums.ReservationStatus;
+import cat.montsec.hostal.reservation.mapper.ReservationMapper;
 import cat.montsec.hostal.reservation.model.Reservation;
 import cat.montsec.hostal.reservation.repository.ReservationRepository;
 import cat.montsec.hostal.table.model.RestaurantTable;
@@ -19,6 +20,7 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final TableRepository tableRepository;
     private final UserRepository userRepository;
+    private final ReservationMapper reservationMapper;
 
     public ReservationResponseDTO createReservation(ReservationRequestDTO request, String userEmail) {
 
@@ -52,7 +54,7 @@ public class ReservationService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
-        return mapToResponseDTO(savedReservation);
+        return reservationMapper.toResponseDTO(savedReservation);
     }
 
     public java.util.List<ReservationResponseDTO> getReservations(String userEmail) {
@@ -68,7 +70,7 @@ public class ReservationService {
         }
 
         return reservations.stream()
-                .map(this::mapToResponseDTO)
+                .map(reservationMapper::toResponseDTO)
                 .toList();
     }
 
@@ -135,18 +137,7 @@ public class ReservationService {
 
         Reservation updatedReservation = reservationRepository.save(reservation);
 
-        return mapToResponseDTO(updatedReservation);
+        return reservationMapper.toResponseDTO(updatedReservation);
     }
 
-    private ReservationResponseDTO mapToResponseDTO(Reservation reservation) {
-        return new ReservationResponseDTO(
-                reservation.getId(),
-                reservation.getUser().getEmail(),
-                reservation.getRestaurantTable().getTableNumber(),
-                reservation.getReservationDate(),
-                reservation.getReservationTime(),
-                reservation.getNumberOfPeople(),
-                reservation.getStatus()
-        );
-    }
 }
