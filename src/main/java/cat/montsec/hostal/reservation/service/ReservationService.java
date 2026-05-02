@@ -13,6 +13,8 @@ import cat.montsec.hostal.table.repository.TableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class ReservationService {
     private final UserRepository userRepository;
     private final ReservationMapper reservationMapper;
 
+    @CacheEvict(value = "reservations", allEntries = true)
     public ReservationResponseDTO createReservation(ReservationRequestDTO request, String userEmail) {
         log.info("Attempting to create reservation for user: {}, table: {}", userEmail, request.getTableId());
 
@@ -72,6 +75,7 @@ public class ReservationService {
         return reservationMapper.toResponseDTO(savedReservation);
     }
 
+    @Cacheable("reservations")
     public java.util.List<ReservationResponseDTO> getReservations(String userEmail) {
         log.info("Fetching reservations requested by user: {}", userEmail);
 
@@ -94,6 +98,7 @@ public class ReservationService {
                 .toList();
     }
 
+    @CacheEvict(value = "reservations", allEntries = true)
     public void cancelReservation(Long reservationId, String userEmail) {
         log.info("User: {} is attempting to cancel reservation ID: {}", userEmail, reservationId);
 
@@ -117,6 +122,7 @@ public class ReservationService {
         log.info("Reservation ID: {} successfully cancelled by user: {}", reservationId, userEmail);
     }
 
+    @CacheEvict(value = "reservations", allEntries = true)
     public ReservationResponseDTO updateReservation(Long reservationId, ReservationRequestDTO request, String userEmail) {
         log.info("User: {} is attempting to update reservation ID: {}", userEmail, reservationId);
 
