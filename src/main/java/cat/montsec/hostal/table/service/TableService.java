@@ -5,7 +5,9 @@ import cat.montsec.hostal.table.dto.TableResponseDTO;
 import cat.montsec.hostal.table.mapper.TableMapper;
 import cat.montsec.hostal.table.model.RestaurantTable;
 import cat.montsec.hostal.table.repository.TableRepository;
+import org.springframework.cache.annotation.Cacheable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +20,7 @@ public class TableService {
     private final TableRepository tableRepository;
     private final TableMapper tableMapper;
 
+    @CacheEvict(value = "tables", allEntries = true)
     public TableResponseDTO createTable(TableRequestDTO request) {
         if (tableRepository.findByTableNumber(request.getTableNumber()).isPresent()) {
             throw new RuntimeException("Error: Table number " + request.getTableNumber() + " already exists");
@@ -34,6 +37,7 @@ public class TableService {
         return tableMapper.toResponseDTO(savedTable);
     }
 
+    @Cacheable("tables")
     public List<TableResponseDTO> getAllTables() {
         List<RestaurantTable> tables = tableRepository.findAll();
 
