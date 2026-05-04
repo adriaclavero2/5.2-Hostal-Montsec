@@ -21,6 +21,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +36,7 @@ public class ReservationService {
 
     @CacheEvict(value = "reservations", allEntries = true)
     public ReservationResponseDTO createReservation(ReservationRequestDTO request, String userEmail) {
-        log.info("Attempting to create reservation for user: {}, table: {}", userEmail, request.getTableId());
+        log.info("Attempting to create auto-assigned reservation for user: {}", userEmail);
 
         // 1. Validar fecha
         if (request.getReservationDate().isBefore(LocalDate.now())) {
@@ -47,33 +49,35 @@ public class ReservationService {
                     return new ResourceNotFoundException("Error: Usuari no trobat.");
                 });
 
-        RestaurantTable table = tableRepository.findById(request.getTableId())
-                .orElseThrow(() -> {
-                    log.error("Failed to create reservation: Table {} not found", request.getTableId());
-                    return new ResourceNotFoundException("Error: La taula sol·licitada no existeix.");
-                });
+        List<RestaurantTable> allTables = tableRepository.findAll();
+        allTables.sort(Comparator.comparingInt(RestaurantTable::getCapacity));
 
-        if (table.getCapacity() < request.getNumberOfPeople()) {
-            log.warn("Reservation rejected: Table {} capacity ({}) is less than requested people ({})",
-                    table.getTableNumber(), table.getCapacity(), request.getNumberOfPeople());
-            throw new TableNotAvailableException("Error: La taula seleccionada només té capacitat per a " + table.getCapacity() + " persones.");
+        RestaurantTable assignedTable = null;
+
+        for (RestaurantTable table : allTables) {
+            if (table.getCapacity() >= request.getNumberOfPeople()) {
+                boolean isOccupied = reservationRepository.isTableReserved(
+                        table.getId(),
+                        request.getReservationDate(),
+                        request.getReservationTime()
+                );
+
+                if (!isOccupied) {
+                    assignedTable = table;
+                    break;
+                }
+            }
         }
 
-        boolean isOccupied = reservationRepository.isTableReserved(
-                request.getTableId(),
-                request.getReservationDate(),
-                request.getReservationTime()
-        );
-
-        if (isOccupied) {
-            log.warn("Reservation rejected: Table {} is already occupied at {} on {}",
-                    table.getTableNumber(), request.getReservationTime(), request.getReservationDate());
-            throw new TableNotAvailableException("Error: Ho sentim, la taula ja està reservada per a aquesta data i hora.");
+        if (assignedTable == null) {
+            log.warn("Reservation rejected: No tables available for {} people at {} on {}",
+                    request.getNumberOfPeople(), request.getReservationTime(), request.getReservationDate());
+            throw new TableNotAvailableException("Error: Ho sentim, no hi ha taules lliures per a aquesta quantitat de persones en la data i hora seleccionades.");
         }
 
         Reservation reservation = new Reservation();
         reservation.setUser(user);
-        reservation.setRestaurantTable(table);
+        reservation.setRestaurantTable(assignedTable);
         reservation.setReservationDate(request.getReservationDate());
         reservation.setReservationTime(request.getReservationTime());
         reservation.setNumberOfPeople(request.getNumberOfPeople());
@@ -81,7 +85,8 @@ public class ReservationService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
-        log.info("Successfully created reservation ID: {} for user: {}", savedReservation.getId(), userEmail);
+        log.info("Successfully created reservation ID: {} assigned to Table ID: {} for user: {}",
+                savedReservation.getId(), assignedTable.getId(), userEmail);
 
         return reservationMapper.toResponseDTO(savedReservation);
     }
@@ -137,7 +142,6 @@ public class ReservationService {
     public ReservationResponseDTO updateReservation(Long reservationId, ReservationRequestDTO request, String userEmail) {
         log.info("User: {} is attempting to update reservation ID: {}", userEmail, reservationId);
 
-        // 1. Validar fecha nueva
         if (request.getReservationDate().isBefore(LocalDate.now())) {
             throw new InvalidReservationDateException("Error: No pots actualitzar una reserva a una data passada.");
         }
@@ -156,20 +160,37 @@ public class ReservationService {
             throw new AccessDeniedException("Error: No tens permís per modificar aquesta reserva.");
         }
 
-        RestaurantTable table = tableRepository.findById(request.getTableId())
-                .orElseThrow(() -> new ResourceNotFoundException("Error: La taula sol·licitada no existeix."));
+        RestaurantTable assignedTable = null;
 
-        if (table.getCapacity() < request.getNumberOfPeople()) {
-            throw new TableNotAvailableException("Error: La taula seleccionada només té capacitat per a " + table.getCapacity() + " persones.");
+        if (request.getTableId() != null && request.getTableId() > 0) {
+            assignedTable = tableRepository.findById(request.getTableId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Error: La taula sol·licitada no existeix."));
+        } else {
+            List<RestaurantTable> allTables = tableRepository.findAll();
+            allTables.sort(Comparator.comparingInt(RestaurantTable::getCapacity));
+            for (RestaurantTable t : allTables) {
+                if (t.getCapacity() >= request.getNumberOfPeople()) {
+                    boolean isOccupied = reservationRepository.isTableReserved(t.getId(), request.getReservationDate(), request.getReservationTime());
+                    if (!isOccupied || (t.getId().equals(reservation.getRestaurantTable().getId()) && request.getReservationDate().equals(reservation.getReservationDate()) && request.getReservationTime().equals(reservation.getReservationTime()))) {
+                        assignedTable = t;
+                        break;
+                    }
+                }
+            }
+            if (assignedTable == null) throw new TableNotAvailableException("Error: No hi ha taules lliures per a aquests canvis.");
+        }
+
+        if (assignedTable.getCapacity() < request.getNumberOfPeople()) {
+            throw new TableNotAvailableException("Error: La taula seleccionada només té capacitat per a " + assignedTable.getCapacity() + " persones.");
         }
 
         boolean timeChanged = !reservation.getReservationTime().equals(request.getReservationTime());
         boolean dateChanged = !reservation.getReservationDate().equals(request.getReservationDate());
-        boolean tableChanged = !reservation.getRestaurantTable().getId().equals(request.getTableId());
+        boolean tableChanged = !reservation.getRestaurantTable().getId().equals(assignedTable.getId());
 
         if (timeChanged || dateChanged || tableChanged) {
             boolean isOccupied = reservationRepository.isTableReserved(
-                    request.getTableId(),
+                    assignedTable.getId(),
                     request.getReservationDate(),
                     request.getReservationTime()
             );
@@ -179,7 +200,7 @@ public class ReservationService {
             }
         }
 
-        reservation.setRestaurantTable(table);
+        reservation.setRestaurantTable(assignedTable);
         reservation.setReservationDate(request.getReservationDate());
         reservation.setReservationTime(request.getReservationTime());
         reservation.setNumberOfPeople(request.getNumberOfPeople());

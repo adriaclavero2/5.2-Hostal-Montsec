@@ -25,7 +25,13 @@ public class AuthService {
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole("USER"); // Por defecto, todos son clientes (USER)
+
+        if (request.getEmail().equalsIgnoreCase("admin@hostalmontsec.com")) {
+            user.setRole("ADMIN");
+        } else {
+            user.setRole("USER");
+        }
+
         user.setName(request.getName());
         user.setSurname(request.getSurname());
         user.setNationalId(request.getNationalId());

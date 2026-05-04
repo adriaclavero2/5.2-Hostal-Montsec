@@ -34,6 +34,12 @@ public class ReservationController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<java.util.List<ReservationResponseDTO>> getAllReservations(Principal principal) {
+        java.util.List<ReservationResponseDTO> responses = reservationService.getReservations(principal.getName());
+        return ResponseEntity.ok(responses);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> cancelReservation(@PathVariable Long id, Principal principal) {
         reservationService.cancelReservation(id, principal.getName());
