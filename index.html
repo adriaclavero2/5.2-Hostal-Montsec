@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostal Montsec | Inicio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1519125323398-675f0ddb6308?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
+            height: 60vh;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .ig-gallery img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+        .ig-gallery img:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Hostal Montsec</a>
+            <div class="d-flex">
+                <a href="login.html" class="btn btn-outline-light me-2" id="loginBtn">Iniciar Sessió</a>
+                <a href="reservations.html" class="btn btn-primary d-none" id="reservationsBtn">Les meves Reserves</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div>
+            <h1 class="display-3 fw-bold">Benvinguts a Hostal Montsec</h1>
+            <p class="lead">Desconnecta a la natura. Respira la pau del Montsec.</p>
+        </div>
+    </header>
+
+    <section class="container my-5">
+        <h2 class="text-center mb-4"><i class="bi bi-instagram"></i> Segueix-nos a Instagram @HostalMontsec</h2>
+        <div class="row g-3 ig-gallery">
+            <div class="col-md-3"><img src="https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=500&q=80" alt="Habitació"></div>
+            <div class="col-md-3"><img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80" alt="Muntanya"></div>
+            <div class="col-md-3"><img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" alt="Sopar"></div>
+            <div class="col-md-3"><img src="https://images.unsplash.com/photo-1533318087102-b3ad366ed041?w=500&q=80" alt="Cel estrellat"></div>
+        </div>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>
