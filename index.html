@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hostal Montsec | Inicio</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
     <style>
         .hero {
             background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1519125323398-675f0ddb6308?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
@@ -15,6 +19,7 @@
             justify-content: center;
             text-align: center;
         }
+        
         .ig-gallery img {
             width: 100%;
             height: 250px;
@@ -22,19 +27,70 @@
             border-radius: 8px;
             transition: transform 0.3s;
         }
+        
         .ig-gallery img:hover {
             transform: scale(1.05);
         }
+
+        /* --- ESTILOS DE LAS TARJETAS DE MENÚ --- */
+        .menu-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            border-top: 4px solid #198754; /* Borde verde superior */
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        /* --- ESTILOS DEL PLANO DE MESAS --- */
+        .mapa-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            justify-items: center;
+            align-items: center;
+            min-height: 400px;
+            border: 2px dashed #ccc;
+        }
+
+        .taula-plano {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .taula-plano:hover {
+            transform: scale(1.05);
+        }
+
+        .taula-2 { width: 80px; height: 80px; border-radius: 50%; }
+        .taula-4 { width: 100px; height: 100px; border-radius: 15px; }
+        .taula-6 { width: 140px; height: 90px; border-radius: 45px; }
+
+        .disponible { background-color: #198754; border: 3px solid #146c43; }
+        .ocupada { background-color: #dc3545; border: 3px solid #b02a37; }
+
+        .taula-numero { font-size: 1.2rem; }
+        .taula-pax { font-size: 0.8rem; opacity: 0.9; }
     </style>
 </head>
-<body>
+<body class="bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">Hostal Montsec</a>
+            <a class="navbar-brand" href="#"><i class="bi bi-tree"></i> Hostal Montsec</a>
             <div class="d-flex">
                 <a href="login.html" class="btn btn-outline-light me-2" id="loginBtn">Iniciar Sessió</a>
                 <a href="reservations.html" class="btn btn-primary d-none" id="reservationsBtn">Les meves Reserves</a>
+                <button class="btn btn-danger d-none ms-2" id="logoutBtn">Tancar Sessió</button>
             </div>
         </div>
     </nav>
@@ -46,16 +102,112 @@
         </div>
     </header>
 
-    <section class="container my-5">
-        <h2 class="text-center mb-4"><i class="bi bi-instagram"></i> Segueix-nos a Instagram @HostalMontsec</h2>
-        <div class="row g-3 ig-gallery">
-            <div class="col-md-3"><img src="https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=500&q=80" alt="Habitació"></div>
-            <div class="col-md-3"><img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80" alt="Muntanya"></div>
-            <div class="col-md-3"><img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" alt="Sopar"></div>
-            <div class="col-md-3"><img src="https://images.unsplash.com/photo-1533318087102-b3ad366ed041?w=500&q=80" alt="Cel estrellat"></div>
+    <!-- --- SECCIÓN: HISTORIA Y UBICACIÓN --- -->
+    <section class="container my-5 py-4">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h2 class="fw-bold mb-4">La Nostra Història</h2>
+                <p class="lead text-muted">Una masia familiar restaurada amb amor, on la tradició i la natura s'abracen.</p>
+                <p>Des de fa més de 50 anys, l'Hostal Montsec ha estat un refugi per a viatgers i amants de la natura. Situats al cor de la serra del Montsec, oferim una gastronomia basada en productes de proximitat (Km 0) i receptes passades de generació en generació.</p>
+                <p>El nostre objectiu és que et sentis com a casa, gaudint d'un entorn privilegiat, sota un dels cels nocturns més nets del món (Reserva Starlight).</p>
+            </div>
+            <div class="col-lg-6">
+                <!-- Mapa de Google Embed -->
+                <div class="ratio ratio-4x3 shadow-sm rounded overflow-hidden">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11884.281822830811!2d0.7513!3d42.0494!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12a67bc45c92471b%3A0xc47e33dc31d102e3!2sMontsec!5e0!3m2!1sen!2ses!4v1700000000000!5m2!1sen!2ses" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
         </div>
     </section>
 
+    <!-- --- SECCIÓN: LOS MENÚS --- -->
+    <section class="bg-white py-5 shadow-sm">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5"><i class="bi bi-book"></i> Els Nostres Menús</h2>
+            <div class="row g-4">
+                <!-- Menú 1 -->
+                <div class="col-md-4">
+                    <div class="card h-100 menu-card shadow-sm">
+                        <div class="card-body text-center">
+                            <h4 class="card-title fw-bold">Menú Diari</h4>
+                            <h5 class="text-success mb-3">18,50 €</h5>
+                            <p class="card-text text-muted mb-4">Ideal per a fer una pausa en el teu camí. Plats casolans amb ingredients frescos i de temporada.</p>
+                            <ul class="list-unstyled mb-0">
+                                <li><i class="bi bi-check-circle-fill text-success"></i> Primer plat a triar</li>
+                                <li><i class="bi bi-check-circle-fill text-success"></i> Segon plat amb guarnició</li>
+                                <li><i class="bi bi-check-circle-fill text-success"></i> Postres de la casa</li>
+                                <li><i class="bi bi-check-circle-fill text-success"></i> Pa i beguda inclosos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Menú 2 -->
+                <div class="col-md-4">
+                    <div class="card h-100 menu-card shadow-sm border-top border-warning">
+                        <div class="card-body text-center">
+                            <h4 class="card-title fw-bold">Menú Cap de Setmana</h4>
+                            <h5 class="text-warning mb-3">28,00 €</h5>
+                            <p class="card-text text-muted mb-4">Gaudeix del cap de setmana amb les nostres especialitats a la brasa de llenya d'alzina.</p>
+                            <ul class="list-unstyled mb-0">
+                                <li><i class="bi bi-star-fill text-warning"></i> Pica-pica de benvinguda</li>
+                                <li><i class="bi bi-star-fill text-warning"></i> Carns a la brasa D.O.</li>
+                                <li><i class="bi bi-star-fill text-warning"></i> Assortiment de formatges</li>
+                                <li><i class="bi bi-star-fill text-warning"></i> Vi de la casa i postres</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Menú 3 -->
+                <div class="col-md-4">
+                    <div class="card h-100 menu-card shadow-sm border-top border-danger">
+                        <div class="card-body text-center">
+                            <h4 class="card-title fw-bold">Menú Degustació</h4>
+                            <h5 class="text-danger mb-3">45,00 €</h5>
+                            <p class="card-text text-muted mb-4">L'experiència gastronòmica definitiva. Un viatge pels sabors més selectes de la nostra terra.</p>
+                            <ul class="list-unstyled mb-0">
+                                <li><i class="bi bi-gem text-danger"></i> 5 plats d'autor</li>
+                                <li><i class="bi bi-gem text-danger"></i> Maridatge de vins premium</li>
+                                <li><i class="bi bi-gem text-danger"></i> Pre-postres i postres</li>
+                                <li><i class="bi bi-gem text-danger"></i> Cafè i licors del Pirineu</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- --- SECCIÓN: PLANO DE MESAS --- -->
+    <section class="container my-5 py-4">
+        <h2 class="text-center fw-bold mb-4"><i class="bi bi-grid-3x3-gap-fill"></i> Estat del Plànol en Directe</h2>
+        <div class="d-flex justify-content-center mb-4">
+            <span class="badge bg-success me-2 p-2 fs-6"><i class="bi bi-check-circle"></i> Disponible</span>
+            <span class="badge bg-danger p-2 fs-6"><i class="bi bi-x-circle"></i> Ocupada / Reservada</span>
+        </div>
+        
+        <div id="mapaMesas" class="mapa-container shadow p-4 rounded bg-white">
+            <!-- Las mesas se generarán dinámicamente con app.js -->
+        </div>
+    </section>
+
+    <!-- --- SECCIÓN: INSTAGRAM --- -->
+    <section class="container my-5 py-4 border-top">
+        <h3 class="text-center mb-4"><i class="bi bi-instagram text-danger"></i> Segueix-nos a Instagram @HostalMontsec</h3>
+        <div class="row g-3 ig-gallery">
+            <div class="col-md-3"><img src="https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=500&q=80" alt="Habitació" class="shadow-sm"></div>
+            <div class="col-md-3"><img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80" alt="Muntanya" class="shadow-sm"></div>
+            <div class="col-md-3"><img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" alt="Sopar" class="shadow-sm"></div>
+            <div class="col-md-3"><img src="https://images.unsplash.com/photo-1533318087102-b3ad366ed041?w=500&q=80" alt="Cel estrellat" class="shadow-sm"></div>
+        </div>
+    </section>
+
+    <!-- FOOTER SIMPLE -->
+    <footer class="bg-dark text-white text-center py-4">
+        <p class="mb-0">© 2026 Hostal Montsec. Tots els drets reservats.</p>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
