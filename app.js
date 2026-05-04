@@ -100,7 +100,7 @@ if (registerForm) {
     });
 }
 
-// --- LÓGICA PARA CREAR NUEVA RESERVA (ACTUALIZADO: SIN TABLE_ID) ---
+// --- LÓGICA PARA CREAR NUEVA RESERVA ---
 const newReservationForm = document.getElementById('newReservationForm');
 if (newReservationForm) {
     newReservationForm.addEventListener('submit', async (e) => {
@@ -123,7 +123,6 @@ if (newReservationForm) {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                // Se elimina tableId, el backend debe asignarla automáticamente
                 body: JSON.stringify({ reservationDate, reservationTime, numberOfPeople })
             });
 
@@ -139,12 +138,21 @@ if (newReservationForm) {
                     cargarMisReservas();
                 }, 1500);
             } else {
-                const errorData = await response.text();
-                errorDiv.innerHTML = `Ho sentim: No hi ha taules lliures per a ${numberOfPeople} persones en aquesta data i hora.`;
+                // LECTOR DE ERRORES INTELIGENTE
+                let errorMsg = `No s'ha pogut completar la reserva per a ${numberOfPeople} persones.`;
+                try {
+                    const errorData = await response.json();
+                    if (errorData.message) errorMsg = errorData.message;
+                    else if (errorData.error) errorMsg = errorData.error;
+                } catch(err) {
+                    const errorText = await response.text();
+                    if (errorText.length > 0 && errorText.length < 150) errorMsg = errorText;
+                }
+                errorDiv.innerHTML = `<i class="bi bi-exclamation-circle"></i> ${errorMsg}`;
                 errorDiv.classList.remove('d-none');
             }
         } catch (error) {
-            errorDiv.innerHTML = `Error de connexió amb el servidor.`;
+            errorDiv.innerHTML = `<i class="bi bi-wifi-off"></i> Error de connexió amb el servidor.`;
             errorDiv.classList.remove('d-none');
         }
     });
@@ -180,7 +188,6 @@ async function cargarTodasLasReservas() {
     if (!token || !container) return;
 
     try {
-        // ACTUALIZADO: El admin pide todas las reservas a /all
         const response = await fetch(`${API_BASE_URL}/reservations/all`, {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
@@ -274,7 +281,7 @@ function manejarErrorSesion(response, container) {
     }
 }
 
-// --- LÓGICA DEL MAPA DE MESAS (ACTUALIZADO CON HORA/FECHA) ---
+// --- LÓGICA DEL MAPA DE MESAS ---
 function dibujarMapaMesas() {
     const mapaContenedor = document.getElementById('mapaMesas');
     if (!mapaContenedor) return;
