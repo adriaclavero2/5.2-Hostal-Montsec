@@ -21,6 +21,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -120,6 +121,15 @@ public class ReservationService {
 
         if (!isAdmin && !isOwner) {
             throw new AccessDeniedException("Error: No tens permís per cancel·lar aquesta reserva.");
+        }
+
+        LocalDateTime reservationDateTime = LocalDateTime.of(reservation.getReservationDate(), reservation.getReservationTime());
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.plusHours(24).isAfter(reservationDateTime) && reservationDateTime.isAfter(now)) {
+            int penaltyAmount = reservation.getNumberOfPeople() * 20;
+            log.warn("LATE CANCELLATION DETECTED! Charging penalty of {}€ to user {} for reservation #{}",
+                    penaltyAmount, userEmail, reservationId);
         }
 
         reservation.setStatus(ReservationStatus.CANCELLED);
