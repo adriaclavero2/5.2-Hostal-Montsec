@@ -1,4 +1,6 @@
 // URL base de tu Backend de Spring Boot
+console.log("¡POR FIN! app.js cargado correctamente");
+alert("JS externo funcionando");
 const API_BASE_URL = 'http://localhost:8080/api';
 
 // --- LÓGICA DE LOGIN ---
@@ -19,12 +21,10 @@ if (loginForm) {
 
             if (response.ok) {
                 const data = await response.json();
-                // IMPORTANTE: Asegúrate de que tu backend devuelve el campo como "token" o "jwt"
+                // Guardamos el token que devuelve el backend
                 localStorage.setItem('jwt_token', data.token); 
                 window.location.href = 'index.html';
             } else {
-                const errorData = await response.json();
-                console.error("Error del backend:", errorData);
                 document.getElementById('loginError').classList.remove('d-none');
             }
         } catch (error) {
@@ -37,13 +37,15 @@ if (loginForm) {
 // --- LÓGICA DE CARGA DE RESERVAS ---
 async function cargarMisReservas() {
     const token = localStorage.getItem('jwt_token');
+    const listaContainer = document.getElementById('listaReservas');
+    
     if (!token) return;
 
     try {
         const response = await fetch(`${API_BASE_URL}/reservations`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`, // ¡Aquí está la clave!
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -51,14 +53,37 @@ async function cargarMisReservas() {
         if (response.ok) {
             const reservas = await response.json();
             console.log("Reservas recibidas:", reservas);
-            // Aquí iría la lógica para pintar las reservas en el HTML
-            // p.ej: renderizarReservas(reservas);
+            
+            if (reservas.length === 0) {
+                listaContainer.innerHTML = '<div class="alert alert-info">Encara no tens cap reserva.</div>';
+                return;
+            }
+
+            // Generamos el HTML para ver las reservas en la tabla
+            let html = '<table class="table table-striped"><thead><tr>' +
+                       '<th>Data</th><th>Hora</th><th>Persones</th><th>Taula</th><th>Estat</th>' +
+                       '</tr></thead><tbody>';
+            
+            reservas.forEach(res => {
+                html += `<tr>
+                    <td>${res.reservationDate}</td>
+                    <td>${res.reservationTime}</td>
+                    <td>${res.numberOfPeople}</td>
+                    <td>${res.tableId}</td>
+                    <td><span class="badge bg-success">${res.status}</span></td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            listaContainer.innerHTML = html;
+
         } else {
-            console.error("Error al obtener reservas:", response.status);
+            listaContainer.innerHTML = '<div class="alert alert-danger">Error al cargar las reservas.</div>';
             if(response.status === 403) alert("Sessió caducada. Torna a entrar.");
         }
     } catch (error) {
         console.error("Error de red:", error);
+        listaContainer.innerHTML = '<div class="alert alert-danger">Error de conexió amb el servidor.</div>';
     }
 }
 
@@ -67,23 +92,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('jwt_token');
     const loginBtn = document.getElementById('loginBtn');
     const reservationsBtn = document.getElementById('reservationsBtn');
-    const logoutBtn = document.getElementById('logoutBtn'); // Por si tienes un botón de salir
+    const logoutBtn = document.getElementById('logoutBtn');
 
+    // Manejo de botones en el Navbar
     if (token) {
         if (loginBtn) loginBtn.classList.add('d-none');
         if (reservationsBtn) reservationsBtn.classList.remove('d-none');
-        
-        // Si estamos en la página de reservas, las cargamos automáticamente
-        if (window.location.pathname.includes('reservas.html')) {
+    }
+
+    // ¡CORRECCIÓN AQUÍ!: Detectar el nombre correcto del archivo
+    if (window.location.pathname.includes('reservations.html')) {
+        if (token) {
             cargarMisReservas();
+        } else {
+            window.location.href = 'login.html';
         }
     }
 
-    // Lógica para cerrar sesión
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('jwt_token');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         });
     }
 });
