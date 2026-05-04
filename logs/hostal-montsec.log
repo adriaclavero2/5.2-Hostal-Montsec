@@ -353,3 +353,17 @@ java.sql.SQLIntegrityConstraintViolationException: Duplicate entry '12345678Z' f
 2026-05-04 12:14:52 [http-nio-8080-exec-1] INFO  c.m.h.r.service.ReservationService - Successfully created reservation ID: 1 for user: testuser@gmail.com
 2026-05-04 12:15:11 [http-nio-8080-exec-4] INFO  c.m.h.r.service.ReservationService - Fetching reservations requested by user: testuser@gmail.com
 2026-05-04 16:23:11 [HikariPool-1:housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=3h58m9s429ms733µs500ns).
+2026-05-04 18:04:23 [http-nio-8080-exec-3] INFO  c.m.h.r.service.ReservationService - Fetching reservations requested by user: bon@dia.es
+2026-05-04 18:28:18 [http-nio-8080-exec-6] INFO  c.m.h.r.service.ReservationService - Fetching reservations requested by user: admin@hostalmontsec.com
+2026-05-04 18:29:12 [http-nio-8080-exec-2] INFO  c.m.h.r.service.ReservationService - User: testuser@gmail.com is attempting to cancel reservation ID: 1
+2026-05-04 18:29:12 [http-nio-8080-exec-2] INFO  c.m.h.r.service.ReservationService - Reservation ID: 1 successfully cancelled by user: testuser@gmail.com
+2026-05-04 18:29:13 [http-nio-8080-exec-3] INFO  c.m.h.r.service.ReservationService - Fetching reservations requested by user: testuser@gmail.com
+2026-05-04 18:29:48 [http-nio-8080-exec-6] INFO  c.m.h.r.service.ReservationService - Attempting to create reservation for user: testuser@gmail.com, table: 1
+2026-05-04 18:29:48 [http-nio-8080-exec-6] INFO  c.m.h.r.service.ReservationService - Successfully created reservation ID: 2 for user: testuser@gmail.com
+2026-05-04 18:29:49 [http-nio-8080-exec-7] INFO  c.m.h.r.service.ReservationService - Fetching reservations requested by user: testuser@gmail.com
+2026-05-04 18:30:13 [http-nio-8080-exec-1] INFO  c.m.h.r.service.ReservationService - Fetching reservations requested by user: admin@hostalmontsec.com
+2026-05-04 18:45:29 [SpringApplicationShutdownHook] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-05-04 18:45:29 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-05-04 18:45:29 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-04 18:45:29 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-05-04 18:45:29 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.

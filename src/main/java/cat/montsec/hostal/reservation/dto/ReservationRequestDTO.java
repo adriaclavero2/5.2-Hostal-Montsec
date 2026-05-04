@@ -15,7 +15,6 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class ReservationRequestDTO {
 
-    @NotNull(message = "Table ID is required")
     private Long tableId;
 
     @NotNull(message = "Date is required")

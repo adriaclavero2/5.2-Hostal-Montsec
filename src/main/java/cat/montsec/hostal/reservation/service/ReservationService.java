@@ -38,18 +38,19 @@ public class ReservationService {
     public ReservationResponseDTO createReservation(ReservationRequestDTO request, String userEmail) {
         log.info("Attempting to create auto-assigned reservation for user: {}", userEmail);
 
-        // 1. Validar fecha
         if (request.getReservationDate().isBefore(LocalDate.now())) {
             throw new InvalidReservationDateException("Error: No pots fer una reserva per a una data passada.");
         }
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> {
-                    log.error("Failed to create reservation: User {} not found", userEmail);
-                    return new ResourceNotFoundException("Error: Usuari no trobat.");
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("Error: Usuari no trobat."));
 
         List<RestaurantTable> allTables = tableRepository.findAll();
+
+        if (allTables.isEmpty()) {
+            throw new TableNotAvailableException("Error Crític: No hi ha taules registrades a la base de dades.");
+        }
+
         allTables.sort(Comparator.comparingInt(RestaurantTable::getCapacity));
 
         RestaurantTable assignedTable = null;
@@ -70,9 +71,7 @@ public class ReservationService {
         }
 
         if (assignedTable == null) {
-            log.warn("Reservation rejected: No tables available for {} people at {} on {}",
-                    request.getNumberOfPeople(), request.getReservationTime(), request.getReservationDate());
-            throw new TableNotAvailableException("Error: Ho sentim, no hi ha taules lliures per a aquesta quantitat de persones en la data i hora seleccionades.");
+            throw new TableNotAvailableException("Ho sentim, no hi ha taules lliures per a " + request.getNumberOfPeople() + " persones en aquesta data i hora.");
         }
 
         Reservation reservation = new Reservation();
@@ -85,25 +84,19 @@ public class ReservationService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
-        log.info("Successfully created reservation ID: {} assigned to Table ID: {} for user: {}",
-                savedReservation.getId(), assignedTable.getId(), userEmail);
-
         return reservationMapper.toResponseDTO(savedReservation);
     }
 
     @Cacheable("reservations")
     public java.util.List<ReservationResponseDTO> getReservations(String userEmail) {
-        log.info("Fetching reservations requested by user: {}", userEmail);
-
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> {
-                    log.error("Failed to fetch reservations: User {} not found", userEmail);
-                    return new ResourceNotFoundException("Error: Usuari no trobat.");
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("Error: Usuari no trobat."));
 
         java.util.List<Reservation> reservations;
 
-        if ("ADMIN".equals(user.getRole())) {
+        boolean isAdmin = user.getRole() != null && user.getRole().toUpperCase().contains("ADMIN");
+
+        if (isAdmin) {
             reservations = reservationRepository.findAll();
         } else {
             reservations = reservationRepository.findByUserId(user.getId());
@@ -116,32 +109,25 @@ public class ReservationService {
 
     @CacheEvict(value = "reservations", allEntries = true)
     public void cancelReservation(Long reservationId, String userEmail) {
-        log.info("User: {} is attempting to cancel reservation ID: {}", userEmail, reservationId);
-
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Error: Usuari no trobat."));
 
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Error: Reserva no trobada."));
 
-        boolean isAdmin = "ADMIN".equals(user.getRole());
+        boolean isAdmin = user.getRole() != null && user.getRole().toUpperCase().contains("ADMIN");
         boolean isOwner = reservation.getUser().getId().equals(user.getId());
 
         if (!isAdmin && !isOwner) {
-            log.warn("Unauthorized cancellation attempt by user: {} for reservation ID: {}", userEmail, reservationId);
             throw new AccessDeniedException("Error: No tens permís per cancel·lar aquesta reserva.");
         }
 
         reservation.setStatus(ReservationStatus.CANCELLED);
         reservationRepository.save(reservation);
-
-        log.info("Reservation ID: {} successfully cancelled by user: {}", reservationId, userEmail);
     }
 
     @CacheEvict(value = "reservations", allEntries = true)
     public ReservationResponseDTO updateReservation(Long reservationId, ReservationRequestDTO request, String userEmail) {
-        log.info("User: {} is attempting to update reservation ID: {}", userEmail, reservationId);
-
         if (request.getReservationDate().isBefore(LocalDate.now())) {
             throw new InvalidReservationDateException("Error: No pots actualitzar una reserva a una data passada.");
         }
@@ -152,11 +138,10 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Error: Reserva no trobada."));
 
-        boolean isAdmin = "ADMIN".equals(user.getRole());
+        boolean isAdmin = user.getRole() != null && user.getRole().toUpperCase().contains("ADMIN");
         boolean isOwner = reservation.getUser().getId().equals(user.getId());
 
         if (!isAdmin && !isOwner) {
-            log.warn("Unauthorized update attempt by user: {} for reservation ID: {}", userEmail, reservationId);
             throw new AccessDeniedException("Error: No tens permís per modificar aquesta reserva.");
         }
 
@@ -206,8 +191,6 @@ public class ReservationService {
         reservation.setNumberOfPeople(request.getNumberOfPeople());
 
         Reservation updatedReservation = reservationRepository.save(reservation);
-
-        log.info("Reservation ID: {} successfully updated by user: {}", reservationId, userEmail);
 
         return reservationMapper.toResponseDTO(updatedReservation);
     }
