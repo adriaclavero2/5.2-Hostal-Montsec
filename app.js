@@ -30,6 +30,40 @@ if (loginForm) {
     });
 }
 
+// --- LÓGICA DE REGISTRO (NUEVO) ---
+const registerForm = document.getElementById('registerForm');
+if (registerForm) {
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPassword').value;
+
+        try {
+            // Suponemos que tu backend tiene un endpoint /auth/register
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (response.ok) {
+                document.getElementById('registerError').classList.add('d-none');
+                document.getElementById('registerSuccess').classList.remove('d-none');
+                // Esperamos 2 segundos y lo mandamos al login para que entre
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            } else {
+                document.getElementById('registerSuccess').classList.add('d-none');
+                document.getElementById('registerError').classList.remove('d-none');
+            }
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            alert("No s'ha pogut connectar amb el servidor.");
+        }
+    });
+}
+
 // --- LÓGICA DE CARGA DE RESERVAS ---
 async function cargarMisReservas() {
     const token = localStorage.getItem('jwt_token');
@@ -112,7 +146,7 @@ function cancelarReserva(id) {
     }
 }
 
-// --- LÓGICA DEL MAPA DE MESAS (NUEVO) ---
+// --- LÓGICA DEL MAPA DE MESAS ---
 function dibujarMapaMesas() {
     const mapaContenedor = document.getElementById('mapaMesas');
     if (!mapaContenedor) return;
