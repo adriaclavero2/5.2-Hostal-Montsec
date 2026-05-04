@@ -100,61 +100,107 @@ if (registerForm) {
     });
 }
 
-// --- LÓGICA PARA CREAR NUEVA RESERVA ---
+// --- LÓGICA PARA CREAR NUEVA RESERVA (CON PASARELA SIMULADA) ---
 const newReservationForm = document.getElementById('newReservationForm');
+const paymentForm = document.getElementById('paymentForm');
+
+// Variables temporales para guardar la reserva antes de pagar
+let tempReservationData = null;
+
 if (newReservationForm) {
-    newReservationForm.addEventListener('submit', async (e) => {
+    newReservationForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        const reservationDate = document.getElementById('resDate').value;
-        const reservationTime = document.getElementById('resTime').value;
-        const numberOfPeople = parseInt(document.getElementById('resPax').value);
-        const token = localStorage.getItem('jwt_token');
+        // Guardamos los datos temporalmente
+        tempReservationData = {
+            reservationDate: document.getElementById('resDate').value,
+            reservationTime: document.getElementById('resTime').value,
+            numberOfPeople: parseInt(document.getElementById('resPax').value)
+        };
 
+        // Calculamos la penalización (20€ por persona)
+        document.getElementById('penaltyAmount').innerText = tempReservationData.numberOfPeople * 20;
+
+        // Ocultamos el Modal 1 y Mostramos el Modal 2 (Pago)
+        const modal1 = bootstrap.Modal.getInstance(document.getElementById('nuevaReservaModal'));
+        modal1.hide();
+        const modal2 = new bootstrap.Modal(document.getElementById('paymentModal'));
+        modal2.show();
+    });
+}
+
+if (paymentForm) {
+    paymentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const token = localStorage.getItem('jwt_token');
         const errorDiv = document.getElementById('reservaError');
         const successDiv = document.getElementById('reservaSuccess');
+        const payBtn = document.getElementById('payBtn');
+        const payBtnText = document.getElementById('payBtnText');
+        const payBtnSpinner = document.getElementById('payBtnSpinner');
+        const closeBtn = document.getElementById('closePaymentBtn');
+        const cancelBtn = document.getElementById('cancelPaymentBtn');
+
         errorDiv.classList.add('d-none');
         successDiv.classList.add('d-none');
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/reservations`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ reservationDate, reservationTime, numberOfPeople })
-            });
+        // Estado de carga (SIMULACIÓN BANCO)
+        payBtn.disabled = true;
+        closeBtn.disabled = true;
+        cancelBtn.disabled = true;
+        payBtnText.innerText = "Processant pagament...";
+        payBtnSpinner.classList.remove('d-none');
 
-            if (response.ok) {
-                successDiv.classList.remove('d-none');
-                setTimeout(() => {
-                    const modalEl = document.getElementById('nuevaReservaModal');
-                    const modal = bootstrap.Modal.getInstance(modalEl);
-                    modal.hide();
-                    
-                    newReservationForm.reset();
-                    successDiv.classList.add('d-none');
-                    cargarMisReservas();
-                }, 1500);
-            } else {
-                // LECTOR DE ERRORES INTELIGENTE
-                let errorMsg = `No s'ha pogut completar la reserva per a ${numberOfPeople} persones.`;
-                try {
-                    const errorData = await response.json();
-                    if (errorData.message) errorMsg = errorData.message;
-                    else if (errorData.error) errorMsg = errorData.error;
-                } catch(err) {
-                    const errorText = await response.text();
-                    if (errorText.length > 0 && errorText.length < 150) errorMsg = errorText;
+        // Simulamos 2 segundos de espera de la pasarela de pago
+        setTimeout(async () => {
+            try {
+                // Ahora sí, hacemos la llamada REAL al Backend
+                const response = await fetch(`${API_BASE_URL}/reservations`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(tempReservationData)
+                });
+
+                if (response.ok) {
+                    successDiv.classList.remove('d-none');
+                    setTimeout(() => {
+                        const modalEl = document.getElementById('paymentModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        modal.hide();
+                        
+                        newReservationForm.reset();
+                        paymentForm.reset();
+                        successDiv.classList.add('d-none');
+                        cargarMisReservas();
+                    }, 1500);
+                } else {
+                    let errorMsg = `No s'ha pogut completar la reserva per a ${tempReservationData.numberOfPeople} persones.`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.message) errorMsg = errorData.message;
+                    } catch(err) {
+                        const errorText = await response.text();
+                        if (errorText.length > 0 && errorText.length < 150) errorMsg = errorText;
+                    }
+                    errorDiv.innerHTML = `<i class="bi bi-exclamation-circle"></i> ${errorMsg}`;
+                    errorDiv.classList.remove('d-none');
                 }
-                errorDiv.innerHTML = `<i class="bi bi-exclamation-circle"></i> ${errorMsg}`;
+            } catch (error) {
+                errorDiv.innerHTML = `<i class="bi bi-wifi-off"></i> Error de connexió amb el servidor.`;
                 errorDiv.classList.remove('d-none');
+            } finally {
+                // Restaurar botones
+                payBtn.disabled = false;
+                closeBtn.disabled = false;
+                cancelBtn.disabled = false;
+                payBtnText.innerHTML = '<i class="bi bi-shield-check"></i> Autoritzar i Reservar';
+                payBtnSpinner.classList.add('d-none');
             }
-        } catch (error) {
-            errorDiv.innerHTML = `<i class="bi bi-wifi-off"></i> Error de connexió amb el servidor.`;
-            errorDiv.classList.remove('d-none');
-        }
+        }, 2000); // 2 segundos de simulación
     });
 }
 
@@ -240,7 +286,7 @@ function dibujarTablaReservas(reservas, contenedor, esAdmin) {
                 <td>T-${res.tableId || res.tableNumber || 'Auto'}</td>
                 <td><span class="badge ${badgeClass}">${res.status || 'PENDING'}</span></td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-outline-danger" onclick="cancelarReserva(${res.id})">
+                    <button class="btn btn-sm btn-outline-danger" onclick="cancelarReserva(${res.id}, '${res.reservationDate}', '${res.reservationTime}', ${res.numberOfPeople})">
                         <i class="bi bi-trash3"></i> Anul·lar
                     </button>
                 </td>
@@ -250,9 +296,22 @@ function dibujarTablaReservas(reservas, contenedor, esAdmin) {
     contenedor.innerHTML = html;
 }
 
-// --- FUNCIÓN PARA BORRAR RESERVAS REAL ---
-async function cancelarReserva(id) {
-    if(confirm(`Estàs segur que vols anul·lar i ESBORRAR la reserva #${id}?`)) {
+// --- FUNCIÓN PARA BORRAR RESERVAS Y CALCULAR PENALIZACIÓN ---
+async function cancelarReserva(id, dateStr, timeStr, pax) {
+    // Cálculo de las 24 horas
+    const reservaDateTime = new Date(`${dateStr}T${timeStr}`);
+    const ahora = new Date();
+    const diferenciaHoras = (reservaDateTime - ahora) / (1000 * 60 * 60);
+    
+    let mensajeConfirmacion = `Estàs segur que vols anul·lar la reserva #${id}?`;
+    
+    // Si quedan menos de 24 horas y no es una reserva pasada
+    if (diferenciaHoras > 0 && diferenciaHoras < 24) {
+        const penalizacion = pax * 20;
+        mensajeConfirmacion = `ATENCIÓ: Faltan menys de 24 hores per a la teva reserva!\n\nSi anul·les ara, s'aplicarà el càrrec de ${penalizacion}€ a la teva targeta com a penalització.\n\nVols continuar amb l'anul·lació?`;
+    }
+
+    if(confirm(mensajeConfirmacion)) {
         const token = localStorage.getItem('jwt_token');
         try {
             const response = await fetch(`${API_BASE_URL}/reservations/${id}`, {
@@ -261,7 +320,12 @@ async function cancelarReserva(id) {
             });
 
             if (response.ok || response.status === 204) {
-                alert("Reserva anul·lada correctament.");
+                if (diferenciaHoras > 0 && diferenciaHoras < 24) {
+                    alert(`Reserva anul·lada. S'ha realitzat el cobrament de ${pax * 20}€ a la targeta vinculada.`);
+                } else {
+                    alert("Reserva anul·lada correctament sense càrrecs.");
+                }
+                
                 if (document.getElementById('adminReservasContainer')) cargarTodasLasReservas();
                 else if (document.getElementById('listaReservas')) cargarMisReservas();
             } else {

@@ -15,6 +15,12 @@
             margin-bottom: 2rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+        .payment-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
     </style>
 </head>
 <body>
@@ -38,14 +44,12 @@
         <div class="card shadow border-0">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 fw-bold"><i class="bi bi-list-ul"></i> Llista de Reserves</h5>
-                <!-- BOTÓN PARA CREAR NUEVA RESERVA -->
                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaReservaModal">
                     <i class="bi bi-plus-circle"></i> Fer Nova Reserva
                 </button>
             </div>
             <div class="card-body">
                 <div id="listaReservas">
-                    <!-- Aquí se inyecta la tabla con JS -->
                     <div class="text-center py-5">
                         <div class="spinner-border text-success" role="status"></div>
                         <p class="mt-2 text-muted">Carregant les teves reserves...</p>
@@ -55,19 +59,19 @@
         </div>
     </div>
 
-    <!-- MODAL PARA NUEVA RESERVA (SIN ELEGIR MESA) -->
-    <div class="modal fade" id="nuevaReservaModal" tabindex="-1" aria-labelledby="nuevaReservaModalLabel" aria-hidden="true">
+    <!-- MODAL 1: DATOS DE LA RESERVA -->
+    <div class="modal fade" id="nuevaReservaModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content border-top border-success border-4">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="nuevaReservaModalLabel">Nova Reserva</h5>
+                    <h5 class="modal-title fw-bold">Nova Reserva</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="newReservationForm">
                     <div class="modal-body">
-                        <div id="reservaError" class="alert alert-danger d-none small"></div>
-                        <div id="reservaSuccess" class="alert alert-success d-none small">Reserva completada!</div>
-
+                        <div class="alert alert-warning small">
+                            <i class="bi bi-info-circle-fill"></i> Es requerirà una targeta de crèdit per garantir la reserva. No es farà cap càrrec ara mateix.
+                        </div>
                         <div class="mb-3">
                             <label for="resDate" class="form-label">Data</label>
                             <input type="date" class="form-control" id="resDate" required>
@@ -85,7 +89,55 @@
                     </div>
                     <div class="modal-footer flex-nowrap">
                         <button type="button" class="btn btn-outline-secondary w-50" data-bs-dismiss="modal">Cancel·lar</button>
-                        <button type="submit" class="btn btn-success w-50">Confirmar Reserva</button>
+                        <button type="submit" class="btn btn-dark w-50">Continuar al Pagament <i class="bi bi-arrow-right"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: PASARELA DE PAGO SIMULADA -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content border-top border-dark border-4">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-lock-fill text-success"></i> Pagament Segur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="closePaymentBtn"></button>
+                </div>
+                <form id="paymentForm">
+                    <div class="modal-body">
+                        <div id="reservaError" class="alert alert-danger d-none small"></div>
+                        <div id="reservaSuccess" class="alert alert-success d-none small">Pagament autoritzat! Confirmant reserva...</div>
+
+                        <div class="payment-box mb-3">
+                            <h6 class="fw-bold mb-3">Garantia de la reserva</h6>
+                            <p class="small text-muted mb-2">Autoritzes una retenció preventiva a la teva targeta. <strong>Només es cobraran <span id="penaltyAmount" class="text-danger fw-bold"></span>€</strong> en total (20€ per persona) si anul·les amb menys de 24 hores d'antelació o en cas de no presentar-se.</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Número de Targeta</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
+                                <input type="text" class="form-control" placeholder="0000 0000 0000 0000" required minlength="16" maxlength="16" pattern="[0-9]{16}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label small fw-bold">Caducitat</label>
+                                <input type="text" class="form-control" placeholder="MM/AA" required minlength="5" maxlength="5">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label small fw-bold">CVV</label>
+                                <input type="password" class="form-control" placeholder="123" required minlength="3" maxlength="3" pattern="[0-9]{3}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer flex-nowrap">
+                        <button type="button" class="btn btn-outline-secondary w-50" data-bs-dismiss="modal" id="cancelPaymentBtn">Enrere</button>
+                        <button type="submit" class="btn btn-success w-50" id="payBtn">
+                            <span id="payBtnText"><i class="bi bi-shield-check"></i> Autoritzar i Reservar</span>
+                            <span id="payBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        </button>
                     </div>
                 </form>
             </div>
