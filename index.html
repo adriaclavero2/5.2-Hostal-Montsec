@@ -11,8 +11,8 @@
     
     <style>
         .hero {
-            /* FOTO ACTUALIZADA: Masía rústica de piedra exterior */
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1582293041079-7814c2f12063?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
+            /* FOTO ACTUALIZADA: Masía de piedra rústica en la montaña */
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1449844908441-8829872d2607?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
             height: 60vh;
             color: white;
             display: flex;
@@ -117,10 +117,12 @@
         <div class="container">
             <a class="navbar-brand" href="index.html"><i class="bi bi-tree"></i> Hostal Montsec</a>
             <div class="d-flex">
+                <!-- Botones para Invitados (No logueados) -->
                 <a href="login.html" class="btn btn-outline-light me-2" id="loginBtn">Iniciar Sessió</a>
-                <!-- Botón Usuario Normal -->
+                <a href="register.html" class="btn btn-success me-2" id="registerBtn">Registrar-se</a>
+                
+                <!-- Botones para Usuarios y Admins (Se muestran por JS) -->
                 <a href="reservations.html" class="btn btn-primary d-none" id="reservationsBtn">Les meves Reserves</a>
-                <!-- Botón Administrador -->
                 <a href="admin.html" class="btn btn-warning d-none me-2" id="adminBtn"><i class="bi bi-gear-fill"></i> Administració</a>
                 
                 <button class="btn btn-danger d-none ms-2" id="logoutBtn">Tancar Sessió</button>
@@ -204,11 +206,30 @@
         </div>
     </section>
 
+  <!-- --- SECCIÓN: PLANO DE MESAS --- -->
     <section class="container my-5 py-4">
-        <h2 class="text-center fw-bold mb-4"><i class="bi bi-grid-3x3-gap-fill"></i> Estat del Plànol en Directe</h2>
+        <h2 class="text-center fw-bold mb-4"><i class="bi bi-grid-3x3-gap-fill"></i> Disponibilitat de Taules</h2>
+        
+        <!-- BUSCADOR DE FECHA Y HORA -->
+        <div class="row justify-content-center mb-4 bg-white p-3 rounded shadow-sm border">
+            <div class="col-md-3 mb-2 mb-md-0">
+                <label for="mapDate" class="form-label fw-bold text-success small"><i class="bi bi-calendar-event"></i> Data de reserva</label>
+                <input type="date" class="form-control" id="mapDate">
+            </div>
+            <div class="col-md-3 mb-2 mb-md-0">
+                <label for="mapTime" class="form-label fw-bold text-success small"><i class="bi bi-clock"></i> Hora</label>
+                <input type="time" class="form-control" id="mapTime" value="14:00">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-success w-100" onclick="dibujarMapaMesas()">
+                    <i class="bi bi-search"></i> Cercar Disponibilitat
+                </button>
+            </div>
+        </div>
+
         <div class="d-flex justify-content-center mb-4">
-            <span class="badge bg-success me-2 p-2 fs-6"><i class="bi bi-check-circle"></i> Disponible</span>
-            <span class="badge bg-danger p-2 fs-6"><i class="bi bi-x-circle"></i> Ocupada / Reservada</span>
+            <span class="badge bg-success me-2 p-2 fs-6"><i class="bi bi-check-circle"></i> Lliure</span>
+            <span class="badge bg-danger p-2 fs-6"><i class="bi bi-x-circle"></i> Ocupada en l'horari seleccionat</span>
         </div>
         
         <div id="mapaMesas"></div>

@@ -1,20 +1,98 @@
 <!DOCTYPE html>
-<html lang="ca">
-    <script>
-    alert("¡Hola desde el propio HTML!");
-    console.log("Si ves esto, el HTML funciona, pero el app.js no.");
-</script>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Les meves Reserves</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostal Montsec | Les meves Reserves</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f4f6f9; }
+        .hero-reservas {
+            background: #198754;
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>Les meves Reserves</h1>
-        <div id="listaReservas">Cargando...</div>
-        <a href="index.html" class="btn btn-secondary mt-3">Tornar</a>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="bi bi-tree"></i> Hostal Montsec</a>
+            <div class="d-flex">
+                <a href="index.html" class="btn btn-outline-light me-2">Inici</a>
+                <button class="btn btn-danger" id="logoutBtn">Tancar Sessió</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-reservas text-center">
+        <h2 class="fw-bold"><i class="bi bi-calendar-check"></i> El meu Panell de Reserves</h2>
+        <p class="lead mb-0">Gestiona les teves visites al nostre hostal de muntanya.</p>
     </div>
+
+    <div class="container mb-5">
+        <div class="card shadow border-0">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-list-ul"></i> Llista de Reserves</h5>
+                <!-- BOTÓN PARA CREAR NUEVA RESERVA -->
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaReservaModal">
+                    <i class="bi bi-plus-circle"></i> Fer Nova Reserva
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="listaReservas">
+                    <!-- Aquí se inyecta la tabla con JS -->
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-success" role="status"></div>
+                        <p class="mt-2 text-muted">Carregant les teves reserves...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA NUEVA RESERVA (SIN ELEGIR MESA) -->
+    <div class="modal fade" id="nuevaReservaModal" tabindex="-1" aria-labelledby="nuevaReservaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content border-top border-success border-4">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="nuevaReservaModalLabel">Nova Reserva</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="newReservationForm">
+                    <div class="modal-body">
+                        <div id="reservaError" class="alert alert-danger d-none small"></div>
+                        <div id="reservaSuccess" class="alert alert-success d-none small">Reserva completada!</div>
+
+                        <div class="mb-3">
+                            <label for="resDate" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="resDate" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="resTime" class="form-label">Hora</label>
+                                <input type="time" class="form-control" id="resTime" required>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="resPax" class="form-label">Comensals</label>
+                                <input type="number" class="form-control" id="resPax" min="1" max="10" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer flex-nowrap">
+                        <button type="button" class="btn btn-outline-secondary w-50" data-bs-dismiss="modal">Cancel·lar</button>
+                        <button type="submit" class="btn btn-success w-50">Confirmar Reserva</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

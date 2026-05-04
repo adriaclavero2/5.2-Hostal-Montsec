@@ -7,27 +7,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body {
-            background-color: #f8f9fa;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .register-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .card {
-            border: none;
-            border-top: 4px solid #198754;
-        }
+        body { background-color: #f8f9fa; min-height: 100vh; display: flex; flex-direction: column; }
+        .register-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem 0; }
+        .card { border: none; border-top: 4px solid #198754; }
     </style>
 </head>
 <body>
 
-    <!-- Navbar simplificado -->
     <nav class="navbar navbar-dark bg-dark">
         <div class="container justify-content-center">
             <a class="navbar-brand" href="index.html"><i class="bi bi-tree"></i> Hostal Montsec</a>
@@ -35,7 +21,7 @@
     </nav>
 
     <div class="register-container">
-        <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
+        <div class="card shadow-sm p-4" style="width: 100%; max-width: 600px;">
             <h3 class="text-center mb-4">Crea el teu compte</h3>
             
             <div id="registerSuccess" class="alert alert-success d-none text-center">
@@ -43,18 +29,51 @@
             </div>
             
             <div id="registerError" class="alert alert-danger d-none text-center">
-                <i class="bi bi-exclamation-triangle"></i> Error al crear el compte. Comprova les dades.
+                <i class="bi bi-exclamation-triangle"></i> <span>Error al crear el compte. Revisa les dades.</span>
             </div>
 
+            <!-- Formulario con validaciones HTML5 -->
             <form id="registerForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="regName" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="regName" required minlength="2">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="regSurname" class="form-label">Cognoms</label>
+                        <input type="text" class="form-control" id="regSurname" required minlength="2">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="regDni" class="form-label">DNI / NIE</label>
+                        <!-- Obligamos a que tenga exactamente 9 caracteres -->
+                        <input type="text" class="form-control" id="regDni" required minlength="9" maxlength="9" title="Format: 8 números i 1 lletra">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="regPhone" class="form-label">Telèfon</label>
+                        <!-- Obligamos a que sean 9 números -->
+                        <input type="tel" class="form-control" id="regPhone" required pattern="[0-9]{9}" title="Ha de contenir exactament 9 números">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="regCity" class="form-label">Població</label>
+                        <input type="text" class="form-control" id="regCity" required>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
                 <div class="mb-3">
                     <label for="regEmail" class="form-label">Correu electrònic</label>
                     <input type="email" class="form-control" id="regEmail" required placeholder="nom@exemple.com">
                 </div>
                 <div class="mb-4">
                     <label for="regPassword" class="form-label">Contrasenya</label>
-                    <input type="password" class="form-control" id="regPassword" required placeholder="Crea una contrasenya">
+                    <!-- Obligamos a que la contraseña tenga mínimo 6 caracteres -->
+                    <input type="password" class="form-control" id="regPassword" required minlength="6" placeholder="Mínim 6 caràcters">
                 </div>
+                
                 <button type="submit" class="btn btn-success w-100 mb-3">Registrar-se</button>
             </form>
             
