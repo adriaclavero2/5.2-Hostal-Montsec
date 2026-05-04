@@ -6,6 +6,7 @@ import cat.montsec.hostal.table.mapper.TableMapper;
 import cat.montsec.hostal.table.model.RestaurantTable;
 import cat.montsec.hostal.table.repository.TableRepository;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataIntegrityViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class TableService {
     @CacheEvict(value = "tables", allEntries = true)
     public TableResponseDTO createTable(TableRequestDTO request) {
         if (tableRepository.findByTableNumber(request.getTableNumber()).isPresent()) {
-            throw new RuntimeException("Error: Table number " + request.getTableNumber() + " already exists");
+            throw new DataIntegrityViolationException("Error: El número de taula " + request.getTableNumber() + " ja existeix.");
         }
 
         RestaurantTable table = new RestaurantTable();
