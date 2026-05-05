@@ -208,3 +208,13 @@
 2026-05-05 10:26:50 [main] INFO  c.m.hostal.HostalMontsecApplication - Started HostalMontsecApplication in 7.674 seconds (process running for 8.163)
 2026-05-05 11:45:04 [HikariPool-1:housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=21m16s387ms234µs300ns).
 2026-05-05 17:07:56 [HikariPool-1:housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=5h22m52s109ms595µs100ns).
+2026-05-05 19:12:54 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-05 19:12:54 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-05-05 19:12:54 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 8 ms
+2026-05-05 19:14:08 [http-nio-8080-exec-7] INFO  c.m.h.r.service.ReservationService - Processant nova reserva per a l'usuari: hola@buenas.com
+2026-05-05 19:14:08 [http-nio-8080-exec-7] INFO  c.m.h.r.service.ReservationService - Reserva creada amb èxit. ID: 6, Taula assignada: 2
+2026-05-05 19:14:16 [http-nio-8080-exec-1] WARN  c.m.h.r.service.ReservationService - Cancel·lació tardana (menys de 24h). Aplicant penalització de 40€ a l'usuari hola@buenas.com per la reserva #6
+2026-05-05 19:14:19 [http-nio-8080-exec-4] INFO  c.m.h.r.service.ReservationService - Reserva ID: 6 eliminada definitivament del sistema per l'usuari: hola@buenas.com
+2026-05-05 19:26:53 [http-nio-8080-exec-2] INFO  c.m.h.r.service.ReservationService - Processant nova reserva per a l'usuari: testuser@gmail.com
+2026-05-05 19:26:53 [http-nio-8080-exec-2] INFO  c.m.h.r.service.ReservationService - Reserva creada amb èxit. ID: 7, Taula assignada: 2
+2026-05-05 19:27:05 [http-nio-8080-exec-7] INFO  c.m.h.r.service.ReservationService - Reserva ID: 7 eliminada definitivament del sistema per l'usuari: testuser@gmail.com
