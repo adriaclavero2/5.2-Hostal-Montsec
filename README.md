@@ -2,7 +2,7 @@
 
 > A full-stack reservation management system built with Spring Boot 3 and Vanilla JavaScript, featuring intelligent table auto-assignment and role-based access control.
 
-[![Java](https://img.shields.io/badge/Java-17+-orange.svg)](https://www.oracle.com/java/)
+[![Java](https://img.shields.io/badge/Java-21+-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Spring Security](https://img.shields.io/badge/Spring%20Security-JWT-red.svg)]()
 [![Frontend](https://img.shields.io/badge/Frontend-HTML5%20%7C%20JS-blue.svg)]()
