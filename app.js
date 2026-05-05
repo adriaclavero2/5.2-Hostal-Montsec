@@ -103,25 +103,20 @@ if (registerForm) {
 // --- LÓGICA PARA CREAR NUEVA RESERVA (CON PASARELA SIMULADA) ---
 const newReservationForm = document.getElementById('newReservationForm');
 const paymentForm = document.getElementById('paymentForm');
-
-// Variables temporales para guardar la reserva antes de pagar
 let tempReservationData = null;
 
 if (newReservationForm) {
     newReservationForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        // Guardamos los datos temporalmente
         tempReservationData = {
             reservationDate: document.getElementById('resDate').value,
             reservationTime: document.getElementById('resTime').value,
             numberOfPeople: parseInt(document.getElementById('resPax').value)
         };
 
-        // Calculamos la penalización (20€ por persona)
         document.getElementById('penaltyAmount').innerText = tempReservationData.numberOfPeople * 20;
 
-        // Ocultamos el Modal 1 y Mostramos el Modal 2 (Pago)
         const modal1 = bootstrap.Modal.getInstance(document.getElementById('nuevaReservaModal'));
         modal1.hide();
         const modal2 = new bootstrap.Modal(document.getElementById('paymentModal'));
@@ -145,17 +140,14 @@ if (paymentForm) {
         errorDiv.classList.add('d-none');
         successDiv.classList.add('d-none');
 
-        // Estado de carga (SIMULACIÓN BANCO)
         payBtn.disabled = true;
         closeBtn.disabled = true;
         cancelBtn.disabled = true;
         payBtnText.innerText = "Processant pagament...";
         payBtnSpinner.classList.remove('d-none');
 
-        // Simulamos 2 segundos de espera de la pasarela de pago
         setTimeout(async () => {
             try {
-                // Ahora sí, hacemos la llamada REAL al Backend
                 const response = await fetch(`${API_BASE_URL}/reservations`, {
                     method: 'POST',
                     headers: {
@@ -193,14 +185,13 @@ if (paymentForm) {
                 errorDiv.innerHTML = `<i class="bi bi-wifi-off"></i> Error de connexió amb el servidor.`;
                 errorDiv.classList.remove('d-none');
             } finally {
-                // Restaurar botones
                 payBtn.disabled = false;
                 closeBtn.disabled = false;
                 cancelBtn.disabled = false;
                 payBtnText.innerHTML = '<i class="bi bi-shield-check"></i> Autoritzar i Reservar';
                 payBtnSpinner.classList.add('d-none');
             }
-        }, 2000); // 2 segundos de simulación
+        }, 2000); 
     });
 }
 
@@ -250,7 +241,7 @@ async function cargarTodasLasReservas() {
     }
 }
 
-// --- DIBUJADOR DE TABLAS REUTILIZABLE ---
+// --- DIBUJADOR DE TABLAS REUTILIZABLE (ACTUALIZADO PARA EL DOBLE CLIC DE BORRADO) ---
 function dibujarTablaReservas(reservas, contenedor, esAdmin) {
     if (reservas.length === 0) {
         contenedor.innerHTML = `<div class="alert alert-info shadow-sm"><i class="bi bi-info-circle"></i> No hi ha cap reserva registrada ara mateix.</div>`;
@@ -275,7 +266,26 @@ function dibujarTablaReservas(reservas, contenedor, esAdmin) {
                 <tbody>`;
     
     reservas.forEach(res => {
-        const badgeClass = res.status === 'CONFIRMED' ? 'bg-success' : 'bg-warning text-dark';
+        let badgeClass = 'bg-warning text-dark';
+        if (res.status === 'CONFIRMED') badgeClass = 'bg-success';
+        if (res.status === 'CANCELLED') badgeClass = 'bg-danger';
+
+        // Lógica del botón: Si está CANCELLED, el botón es rojo fuerte y dice "Esborrar"
+        let botonAccion = '';
+        if (res.status === 'CANCELLED') {
+            botonAccion = `
+                <button class="btn btn-sm btn-danger" onclick="cancelarReserva(${res.id}, '${res.reservationDate}', '${res.reservationTime}', ${res.numberOfPeople}, true)">
+                    <i class="bi bi-x-octagon"></i> Esborrar
+                </button>
+            `;
+        } else {
+            botonAccion = `
+                <button class="btn btn-sm btn-outline-danger" onclick="cancelarReserva(${res.id}, '${res.reservationDate}', '${res.reservationTime}', ${res.numberOfPeople}, false)">
+                    <i class="bi bi-trash3"></i> Anul·lar
+                </button>
+            `;
+        }
+
         html += `
             <tr>
                 <td class="text-muted">#${res.id}</td>
@@ -286,9 +296,7 @@ function dibujarTablaReservas(reservas, contenedor, esAdmin) {
                 <td>T-${res.tableId || res.tableNumber || 'Auto'}</td>
                 <td><span class="badge ${badgeClass}">${res.status || 'PENDING'}</span></td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-outline-danger" onclick="cancelarReserva(${res.id}, '${res.reservationDate}', '${res.reservationTime}', ${res.numberOfPeople})">
-                        <i class="bi bi-trash3"></i> Anul·lar
-                    </button>
+                    ${botonAccion}
                 </td>
             </tr>`;
     });
@@ -296,19 +304,25 @@ function dibujarTablaReservas(reservas, contenedor, esAdmin) {
     contenedor.innerHTML = html;
 }
 
-// --- FUNCIÓN PARA BORRAR RESERVAS Y CALCULAR PENALIZACIÓN ---
-async function cancelarReserva(id, dateStr, timeStr, pax) {
-    // Cálculo de las 24 horas
-    const reservaDateTime = new Date(`${dateStr}T${timeStr}`);
-    const ahora = new Date();
-    const diferenciaHoras = (reservaDateTime - ahora) / (1000 * 60 * 60);
+// --- FUNCIÓN PARA BORRAR/CANCELAR RESERVAS Y CALCULAR PENALIZACIÓN ---
+async function cancelarReserva(id, dateStr, timeStr, pax, isAlreadyCancelled) {
+    let mensajeConfirmacion = "";
     
-    let mensajeConfirmacion = `Estàs segur que vols anul·lar la reserva #${id}?`;
-    
-    // Si quedan menos de 24 horas y no es una reserva pasada
-    if (diferenciaHoras > 0 && diferenciaHoras < 24) {
-        const penalizacion = pax * 20;
-        mensajeConfirmacion = `ATENCIÓ: Faltan menys de 24 hores per a la teva reserva!\n\nSi anul·les ara, s'aplicarà el càrrec de ${penalizacion}€ a la teva targeta com a penalització.\n\nVols continuar amb l'anul·lació?`;
+    // Si ya estaba cancelada, preguntamos si la quiere borrar para siempre
+    if (isAlreadyCancelled) {
+        mensajeConfirmacion = `Vols esborrar DEFINITIVAMENT la reserva #${id} de la base de dades?`;
+    } else {
+        // Cálculo de las 24 horas para cancelaciones normales
+        const reservaDateTime = new Date(`${dateStr}T${timeStr}`);
+        const ahora = new Date();
+        const diferenciaHoras = (reservaDateTime - ahora) / (1000 * 60 * 60);
+        
+        if (diferenciaHoras > 0 && diferenciaHoras < 24) {
+            const penalizacion = pax * 20;
+            mensajeConfirmacion = `ATENCIÓ: Faltan menys de 24 hores per a la reserva!\n\nS'aplicarà una penalització de ${penalizacion}€ i es tramitarà el retorn de la resta dels diners a la targeta.\n\nVols continuar amb l'anul·lació?`;
+        } else {
+            mensajeConfirmacion = `Estàs segur que vols anul·lar la reserva #${id}?\n\nS'emetrà el reemborsament complet al client sense cap penalització.`;
+        }
     }
 
     if(confirm(mensajeConfirmacion)) {
@@ -320,16 +334,16 @@ async function cancelarReserva(id, dateStr, timeStr, pax) {
             });
 
             if (response.ok || response.status === 204) {
-                if (diferenciaHoras > 0 && diferenciaHoras < 24) {
-                    alert(`Reserva anul·lada. S'ha realitzat el cobrament de ${pax * 20}€ a la targeta vinculada.`);
+                if (isAlreadyCancelled) {
+                    alert("Reserva esborrada correctament del sistema.");
                 } else {
-                    alert("Reserva anul·lada correctament sense càrrecs.");
+                    alert("Reserva anul·lada correctament. S'ha ordenat el retorn dels diners a la targeta del client.");
                 }
                 
                 if (document.getElementById('adminReservasContainer')) cargarTodasLasReservas();
                 else if (document.getElementById('listaReservas')) cargarMisReservas();
             } else {
-                alert("Error al intentar anul·lar la reserva.");
+                alert("Error al intentar modificar la reserva.");
             }
         } catch (error) {
             alert("Error de connexió.");
