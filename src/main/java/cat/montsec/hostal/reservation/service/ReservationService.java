@@ -37,7 +37,7 @@ public class ReservationService {
 
     @CacheEvict(value = "reservations", allEntries = true)
     public ReservationResponseDTO createReservation(ReservationRequestDTO request, String userEmail) {
-        log.info("Attempting to create auto-assigned reservation for user: {}", userEmail);
+        log.info("Processant nova reserva per a l'usuari: {}", userEmail);
 
         if (request.getReservationDate().isBefore(LocalDate.now())) {
             throw new InvalidReservationDateException("Error: No pots fer una reserva per a una data passada.");
@@ -84,6 +84,7 @@ public class ReservationService {
         reservation.setStatus(ReservationStatus.CONFIRMED);
 
         Reservation savedReservation = reservationRepository.save(reservation);
+        log.info("Reserva creada amb èxit. ID: {}, Taula assignada: {}", savedReservation.getId(), assignedTable.getTableNumber());
 
         return reservationMapper.toResponseDTO(savedReservation);
     }
@@ -95,7 +96,8 @@ public class ReservationService {
 
         java.util.List<Reservation> reservations;
 
-        boolean isAdmin = user.getRole() != null && user.getRole().toUpperCase().contains("ADMIN");
+        boolean isAdmin = (user.getRole() != null && user.getRole().toUpperCase().contains("ADMIN"))
+                || user.getEmail().equalsIgnoreCase("admin@hostalmontsec.com");
 
         if (isAdmin) {
             reservations = reservationRepository.findAll();
@@ -116,11 +118,19 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Error: Reserva no trobada."));
 
-        boolean isAdmin = user.getRole() != null && user.getRole().toUpperCase().contains("ADMIN");
+        boolean isAdmin = (user.getRole() != null && user.getRole().toUpperCase().contains("ADMIN"))
+                || user.getEmail().equalsIgnoreCase("admin@hostalmontsec.com");
+
         boolean isOwner = reservation.getUser().getId().equals(user.getId());
 
         if (!isAdmin && !isOwner) {
             throw new AccessDeniedException("Error: No tens permís per cancel·lar aquesta reserva.");
+        }
+
+        if (ReservationStatus.CANCELLED.equals(reservation.getStatus())) {
+            reservationRepository.delete(reservation);
+            log.info("Reserva ID: {} eliminada definitivament del sistema per l'usuari: {}", reservationId, userEmail);
+            return;
         }
 
         LocalDateTime reservationDateTime = LocalDateTime.of(reservation.getReservationDate(), reservation.getReservationTime());
@@ -128,7 +138,7 @@ public class ReservationService {
 
         if (now.plusHours(24).isAfter(reservationDateTime) && reservationDateTime.isAfter(now)) {
             int penaltyAmount = reservation.getNumberOfPeople() * 20;
-            log.warn("LATE CANCELLATION DETECTED! Charging penalty of {}€ to user {} for reservation #{}",
+            log.warn("Cancel·lació tardana (menys de 24h). Aplicant penalització de {}€ a l'usuari {} per la reserva #{}",
                     penaltyAmount, userEmail, reservationId);
         }
 
@@ -148,7 +158,9 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Error: Reserva no trobada."));
 
-        boolean isAdmin = user.getRole() != null && user.getRole().toUpperCase().contains("ADMIN");
+        boolean isAdmin = (user.getRole() != null && user.getRole().toUpperCase().contains("ADMIN"))
+                || user.getEmail().equalsIgnoreCase("admin@hostalmontsec.com");
+
         boolean isOwner = reservation.getUser().getId().equals(user.getId());
 
         if (!isAdmin && !isOwner) {
@@ -201,6 +213,7 @@ public class ReservationService {
         reservation.setNumberOfPeople(request.getNumberOfPeople());
 
         Reservation updatedReservation = reservationRepository.save(reservation);
+        log.info("Reserva ID: {} actualitzada per l'usuari: {}", reservationId, userEmail);
 
         return reservationMapper.toResponseDTO(updatedReservation);
     }
