@@ -68,7 +68,7 @@ Custom business exceptions (`TableNotAvailableException`, `InvalidReservationDat
 
 | Category | Technologies |
 |---|---|
-| **Backend** | Java 17+, Spring Boot 3, Spring Security, Hibernate |
+| **Backend** | Java 21, Spring Boot 3, Spring Security, Hibernate |
 | **Database** | MySQL (Spring Data JPA) |
 | **Frontend** | HTML5, CSS3, Vanilla JavaScript, Bootstrap 5 |
 | **Optimization** | SLF4J (Structured Logging), Spring Cache |
