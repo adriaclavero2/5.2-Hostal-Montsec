@@ -6,9 +6,11 @@ import cat.montsec.hostal.reservation.service.ReservationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -23,20 +25,20 @@ public class ReservationController {
             Principal principal) {
 
         String userEmail = principal.getName();
-
         ReservationResponseDTO response = reservationService.createReservation(request, userEmail);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<java.util.List<ReservationResponseDTO>> getReservations(Principal principal) {
-        java.util.List<ReservationResponseDTO> responses = reservationService.getReservations(principal.getName());
+    public ResponseEntity<List<ReservationResponseDTO>> getReservations(Principal principal) {
+        List<ReservationResponseDTO> responses = reservationService.getReservations(principal.getName());
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
-    public ResponseEntity<java.util.List<ReservationResponseDTO>> getAllReservations(Principal principal) {
-        java.util.List<ReservationResponseDTO> responses = reservationService.getReservations(principal.getName());
+    public ResponseEntity<List<ReservationResponseDTO>> getAllReservations(Principal principal) {
+        List<ReservationResponseDTO> responses = reservationService.getReservations(principal.getName());
         return ResponseEntity.ok(responses);
     }
 
