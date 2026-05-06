@@ -11,6 +11,10 @@ public class ReservationMapper {
         return new ReservationResponseDTO(
                 reservation.getId(),
                 reservation.getUser().getEmail(),
+                reservation.getUser().getName(),
+                reservation.getUser().getSurname(),
+                reservation.getUser().getPhone(),
+
                 reservation.getRestaurantTable().getTableNumber(),
                 reservation.getReservationDate(),
                 reservation.getReservationTime(),
