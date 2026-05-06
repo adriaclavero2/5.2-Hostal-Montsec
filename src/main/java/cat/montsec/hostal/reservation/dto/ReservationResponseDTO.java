@@ -15,6 +15,11 @@ public class ReservationResponseDTO {
 
     private Long id;
     private String userEmail;
+
+    private String userName;
+    private String userSurname;
+    private String userPhone;
+
     private Integer tableNumber;
     private LocalDate reservationDate;
     private LocalTime reservationTime;
