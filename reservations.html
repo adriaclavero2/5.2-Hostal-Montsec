@@ -77,11 +77,17 @@
                             <input type="date" class="form-control" id="resDate" required>
                         </div>
                         <div class="row">
-                            <div class="col-6 mb-3">
-                                <label for="resTime" class="form-label">Hora</label>
-                                <input type="time" class="form-control" id="resTime" required>
+                            <div class="col-7 mb-3">
+                                <label for="resTime" class="form-label">Torn (Hora)</label>
+                                <select class="form-select" id="resTime" required>
+                                    <option value="" disabled selected>Tria un torn...</option>
+                                    <option value="13:00">13:00 (Dinar - Torn 1)</option>
+                                    <option value="15:00">15:00 (Dinar - Torn 2)</option>
+                                    <option value="20:00">20:00 (Sopar - Torn 1)</option>
+                                    <option value="22:00">22:00 (Sopar - Torn 2)</option>
+                                </select>
                             </div>
-                            <div class="col-6 mb-3">
+                            <div class="col-5 mb-3">
                                 <label for="resPax" class="form-label">Comensals</label>
                                 <input type="number" class="form-control" id="resPax" min="1" max="10" required>
                             </div>

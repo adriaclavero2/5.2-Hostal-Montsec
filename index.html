@@ -11,7 +11,6 @@
     
     <style>
         .hero {
-            /* FOTO ACTUALIZADA: Masía de piedra rústica en la montaña */
             background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1449844908441-8829872d2607?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
             height: 60vh;
             color: white;
@@ -117,11 +116,9 @@
         <div class="container">
             <a class="navbar-brand" href="index.html"><i class="bi bi-tree"></i> Hostal Montsec</a>
             <div class="d-flex">
-                <!-- Botones para Invitados (No logueados) -->
                 <a href="login.html" class="btn btn-outline-light me-2" id="loginBtn">Iniciar Sessió</a>
                 <a href="register.html" class="btn btn-success me-2" id="registerBtn">Registrar-se</a>
                 
-                <!-- Botones para Usuarios y Admins (Se muestran por JS) -->
                 <a href="reservations.html" class="btn btn-primary d-none" id="reservationsBtn">Les meves Reserves</a>
                 <a href="admin.html" class="btn btn-warning d-none me-2" id="adminBtn"><i class="bi bi-gear-fill"></i> Administració</a>
                 
@@ -206,19 +203,24 @@
         </div>
     </section>
 
-  <!-- --- SECCIÓN: PLANO DE MESAS --- -->
+    <!-- --- SECCIÓN: PLANO DE MESAS --- -->
     <section class="container my-5 py-4">
         <h2 class="text-center fw-bold mb-4"><i class="bi bi-grid-3x3-gap-fill"></i> Disponibilitat de Taules</h2>
         
-        <!-- BUSCADOR DE FECHA Y HORA -->
+        <!-- BUSCADOR DE FECHA Y HORA (ACTUALITZAT) -->
         <div class="row justify-content-center mb-4 bg-white p-3 rounded shadow-sm border">
             <div class="col-md-3 mb-2 mb-md-0">
                 <label for="mapDate" class="form-label fw-bold text-success small"><i class="bi bi-calendar-event"></i> Data de reserva</label>
                 <input type="date" class="form-control" id="mapDate">
             </div>
-            <div class="col-md-3 mb-2 mb-md-0">
-                <label for="mapTime" class="form-label fw-bold text-success small"><i class="bi bi-clock"></i> Hora</label>
-                <input type="time" class="form-control" id="mapTime" value="14:00">
+            <div class="col-md-4 mb-2 mb-md-0">
+                <label for="mapTime" class="form-label fw-bold text-success small"><i class="bi bi-clock"></i> Torn (Hora)</label>
+                <select class="form-select" id="mapTime">
+                    <option value="13:00" selected>13:00 (Dinar - Torn 1)</option>
+                    <option value="15:00">15:00 (Dinar - Torn 2)</option>
+                    <option value="20:00">20:00 (Sopar - Torn 1)</option>
+                    <option value="22:00">22:00 (Sopar - Torn 2)</option>
+                </select>
             </div>
             <div class="col-md-3 d-flex align-items-end">
                 <button class="btn btn-success w-100" onclick="dibujarMapaMesas()">

@@ -100,7 +100,7 @@ if (registerForm) {
     });
 }
 
-// --- LÓGICA PARA CREAR NUEVA RESERVA (CON PASARELA SIMULADA) ---
+// --- LÓGICA PARA CREAR NUEVA RESERVA ---
 const newReservationForm = document.getElementById('newReservationForm');
 const paymentForm = document.getElementById('paymentForm');
 let tempReservationData = null;
@@ -241,7 +241,7 @@ async function cargarTodasLasReservas() {
     }
 }
 
-// --- DIBUJADOR DE TABLAS REUTILIZABLE (ACTUALIZADO PARA EL DOBLE CLIC DE BORRADO) ---
+// --- DIBUJADOR DE TABLAS REUTILIZABLE (AMB LES NOVES COLUMNES DE CLIENT) ---
 function dibujarTablaReservas(reservas, contenedor, esAdmin) {
     if (reservas.length === 0) {
         contenedor.innerHTML = `<div class="alert alert-info shadow-sm"><i class="bi bi-info-circle"></i> No hi ha cap reserva registrada ara mateix.</div>`;
@@ -254,7 +254,7 @@ function dibujarTablaReservas(reservas, contenedor, esAdmin) {
                 <thead class="table-dark">
                     <tr>
                         <th>ID</th>
-                        ${esAdmin ? '<th>Client</th>' : ''}
+                        ${esAdmin ? '<th>Client</th><th>Contacte</th>' : ''}
                         <th>Data</th>
                         <th>Hora</th>
                         <th>Pax</th>
@@ -270,7 +270,6 @@ function dibujarTablaReservas(reservas, contenedor, esAdmin) {
         if (res.status === 'CONFIRMED') badgeClass = 'bg-success';
         if (res.status === 'CANCELLED') badgeClass = 'bg-danger';
 
-        // Lógica del botón: Si está CANCELLED, el botón es rojo fuerte y dice "Esborrar"
         let botonAccion = '';
         if (res.status === 'CANCELLED') {
             botonAccion = `
@@ -286,10 +285,17 @@ function dibujarTablaReservas(reservas, contenedor, esAdmin) {
             `;
         }
 
+        // Construir datos del cliente (solo para ADMIN)
+        const nomClient = res.userName ? `${res.userName} ${res.userSurname || ''}` : 'Desconegut';
+        const contacteClient = `
+            <i class="bi bi-envelope-fill text-muted"></i> ${res.userEmail || 'N/A'}<br>
+            <i class="bi bi-telephone-fill text-muted"></i> ${res.userPhone || 'N/A'}
+        `;
+
         html += `
             <tr>
                 <td class="text-muted">#${res.id}</td>
-                ${esAdmin ? `<td><strong>${res.userEmail || 'Desconegut'}</strong></td>` : ''}
+                ${esAdmin ? `<td><strong>${nomClient}</strong></td><td><small>${contacteClient}</small></td>` : ''}
                 <td>${res.reservationDate}</td>
                 <td>${res.reservationTime}</td>
                 <td><span class="badge rounded-pill bg-light text-dark border">${res.numberOfPeople}</span></td>
@@ -304,15 +310,13 @@ function dibujarTablaReservas(reservas, contenedor, esAdmin) {
     contenedor.innerHTML = html;
 }
 
-// --- FUNCIÓN PARA BORRAR/CANCELAR RESERVAS Y CALCULAR PENALIZACIÓN ---
+// --- FUNCIÓN PARA BORRAR/CANCELAR RESERVAS ---
 async function cancelarReserva(id, dateStr, timeStr, pax, isAlreadyCancelled) {
     let mensajeConfirmacion = "";
     
-    // Si ya estaba cancelada, preguntamos si la quiere borrar para siempre
     if (isAlreadyCancelled) {
         mensajeConfirmacion = `Vols esborrar DEFINITIVAMENT la reserva #${id} de la base de dades?`;
     } else {
-        // Cálculo de las 24 horas para cancelaciones normales
         const reservaDateTime = new Date(`${dateStr}T${timeStr}`);
         const ahora = new Date();
         const diferenciaHoras = (reservaDateTime - ahora) / (1000 * 60 * 60);
