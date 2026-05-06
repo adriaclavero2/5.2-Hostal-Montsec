@@ -22,6 +22,7 @@ import org.springframework.cache.annotation.CacheEvict;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -35,9 +36,20 @@ public class ReservationService {
     private final UserRepository userRepository;
     private final ReservationMapper reservationMapper;
 
+    private void validateReservationTime(LocalTime time) {
+        if (!time.equals(LocalTime.of(13, 0)) &&
+                !time.equals(LocalTime.of(15, 0)) &&
+                !time.equals(LocalTime.of(20, 0)) &&
+                !time.equals(LocalTime.of(22, 0))) {
+            throw new InvalidReservationDateException("Error: Només s'accepten reserves als torns de les 13:00, 15:00, 20:00 o 22:00.");
+        }
+    }
+
     @CacheEvict(value = "reservations", allEntries = true)
     public ReservationResponseDTO createReservation(ReservationRequestDTO request, String userEmail) {
         log.info("Processant nova reserva per a l'usuari: {}", userEmail);
+
+        validateReservationTime(request.getReservationTime());
 
         if (request.getReservationDate().isBefore(LocalDate.now())) {
             throw new InvalidReservationDateException("Error: No pots fer una reserva per a una data passada.");
@@ -148,6 +160,9 @@ public class ReservationService {
 
     @CacheEvict(value = "reservations", allEntries = true)
     public ReservationResponseDTO updateReservation(Long reservationId, ReservationRequestDTO request, String userEmail) {
+
+        validateReservationTime(request.getReservationTime());
+
         if (request.getReservationDate().isBefore(LocalDate.now())) {
             throw new InvalidReservationDateException("Error: No pots actualitzar una reserva a una data passada.");
         }
