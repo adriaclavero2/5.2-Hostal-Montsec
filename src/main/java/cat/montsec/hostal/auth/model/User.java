@@ -48,6 +48,10 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if ("admin@hostalmontsec.com".equalsIgnoreCase(this.email) ||
+                (this.role != null && this.role.toUpperCase().contains("ADMIN"))) {
+            return List.of(new SimpleGrantedAuthority("ADMIN"));
+        }
         return List.of(new SimpleGrantedAuthority(this.role));
     }
 

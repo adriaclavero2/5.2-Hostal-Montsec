@@ -19,7 +19,7 @@ public class TableController {
 
     private final TableService tableService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     public ResponseEntity<TableResponseDTO> createTable(@Valid @RequestBody TableRequestDTO request) {
         TableResponseDTO response = tableService.createTable(request);

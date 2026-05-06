@@ -6,7 +6,7 @@ import cat.montsec.hostal.reservation.service.ReservationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize; // Importante
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -35,7 +35,7 @@ public class ReservationController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/all")
     public ResponseEntity<List<ReservationResponseDTO>> getAllReservations(Principal principal) {
         List<ReservationResponseDTO> responses = reservationService.getReservations(principal.getName());
