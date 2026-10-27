@@ -19,6 +19,14 @@ public class TableController {
 
     private final TableService tableService;
 
+    // Públic per poder pintar el mapa a index.html
+    @GetMapping
+    public ResponseEntity<List<TableResponseDTO>> getAllTables() {
+        List<TableResponseDTO> response = tableService.getAllTables();
+        return ResponseEntity.ok(response);
+    }
+
+    // Només ADMIN
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     public ResponseEntity<TableResponseDTO> createTable(@Valid @RequestBody TableRequestDTO request) {
@@ -26,9 +34,21 @@ public class TableController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping
-    public ResponseEntity<List<TableResponseDTO>> getAllTables() {
-        List<TableResponseDTO> response = tableService.getAllTables();
+    // Només ADMIN
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<TableResponseDTO> updateTable(
+            @PathVariable Long id,
+            @Valid @RequestBody TableRequestDTO request) {
+        TableResponseDTO response = tableService.updateTable(id, request);
         return ResponseEntity.ok(response);
+    }
+
+    // Només ADMIN
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTable(@PathVariable Long id) {
+        tableService.deleteTable(id);
+        return ResponseEntity.noContent().build();
     }
 }

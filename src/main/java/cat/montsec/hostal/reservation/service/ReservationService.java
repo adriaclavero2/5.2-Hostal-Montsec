@@ -14,11 +14,12 @@ import cat.montsec.hostal.reservation.repository.ReservationRepository;
 import cat.montsec.hostal.table.model.RestaurantTable;
 import cat.montsec.hostal.table.repository.TableRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.CacheEvict;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -101,26 +102,34 @@ public class ReservationService {
         return reservationMapper.toResponseDTO(savedReservation);
     }
 
-    @Cacheable("reservations")
-    public java.util.List<ReservationResponseDTO> getReservations(String userEmail) {
+    // --- MÉTODOS DE PAGINACIÓN Y FILTRADO LIMPIOS ---
+
+    public Page<ReservationResponseDTO> getUserReservations(String userEmail, Pageable pageable, ReservationStatus status) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Error: Usuari no trobat."));
 
-        java.util.List<Reservation> reservations;
-
-        boolean isAdmin = (user.getRole() != null && user.getRole().toUpperCase().contains("ADMIN"))
-                || user.getEmail().equalsIgnoreCase("admin@hostalmontsec.com");
-
-        if (isAdmin) {
-            reservations = reservationRepository.findAll();
+        Page<Reservation> reservations;
+        if (status != null) {
+            reservations = reservationRepository.findByUserIdAndStatus(user.getId(), status, pageable);
         } else {
-            reservations = reservationRepository.findByUserId(user.getId());
+            reservations = reservationRepository.findByUserId(user.getId(), pageable);
         }
 
-        return reservations.stream()
-                .map(reservationMapper::toResponseDTO)
-                .toList();
+        return reservations.map(reservationMapper::toResponseDTO);
     }
+
+    public Page<ReservationResponseDTO> getAdminReservations(Pageable pageable, ReservationStatus status) {
+        Page<Reservation> reservations;
+        if (status != null) {
+            reservations = reservationRepository.findByStatus(status, pageable);
+        } else {
+            reservations = reservationRepository.findAll(pageable);
+        }
+
+        return reservations.map(reservationMapper::toResponseDTO);
+    }
+
+    // ------------------------------------------------
 
     @CacheEvict(value = "reservations", allEntries = true)
     public void cancelReservation(Long reservationId, String userEmail) {

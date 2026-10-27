@@ -1,6 +1,6 @@
 package cat.montsec.hostal.table.dto;
 
-import cat.montsec.hostal.table.enums.TableLocation; // Añade este import
+import cat.montsec.hostal.table.enums.TableLocation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TableResponseDTO {
-
     private Long id;
     private Integer tableNumber;
     private Integer capacity;

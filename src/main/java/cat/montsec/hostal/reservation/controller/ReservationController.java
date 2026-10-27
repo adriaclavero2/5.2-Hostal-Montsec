@@ -2,15 +2,19 @@ package cat.montsec.hostal.reservation.controller;
 
 import cat.montsec.hostal.reservation.dto.ReservationRequestDTO;
 import cat.montsec.hostal.reservation.dto.ReservationResponseDTO;
+import cat.montsec.hostal.reservation.enums.ReservationStatus;
 import cat.montsec.hostal.reservation.service.ReservationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize; // Importante
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -30,15 +34,22 @@ public class ReservationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ReservationResponseDTO>> getReservations(Principal principal) {
-        List<ReservationResponseDTO> responses = reservationService.getReservations(principal.getName());
+    public ResponseEntity<Page<ReservationResponseDTO>> getReservations(
+            @RequestParam(required = false) ReservationStatus status,
+            @PageableDefault(size = 10, sort = "reservationDate", direction = Sort.Direction.ASC) Pageable pageable,
+            Principal principal) {
+
+        Page<ReservationResponseDTO> responses = reservationService.getUserReservations(principal.getName(), pageable, status);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/all")
-    public ResponseEntity<List<ReservationResponseDTO>> getAllReservations(Principal principal) {
-        List<ReservationResponseDTO> responses = reservationService.getReservations(principal.getName());
+    public ResponseEntity<Page<ReservationResponseDTO>> getAllReservations(
+            @RequestParam(required = false) ReservationStatus status,
+            @PageableDefault(size = 10, sort = "reservationDate", direction = Sort.Direction.ASC) Pageable pageable) {
+
+        Page<ReservationResponseDTO> responses = reservationService.getAdminReservations(pageable, status);
         return ResponseEntity.ok(responses);
     }
 

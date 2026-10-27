@@ -8,6 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface TableRepository extends JpaRepository<RestaurantTable, Long> {
-
     Optional<RestaurantTable> findByTableNumber(Integer tableNumber);
+    boolean existsByTableNumber(Integer tableNumber);
 }
