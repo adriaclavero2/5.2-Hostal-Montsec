@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,92 +14,88 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleBadCredentials(BadCredentialsException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", "Credencials incorrectes. Revisa el teu email o contrasenya.");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        return buildErrorResponse("Credencials incorrectes. Revisa el teu email o contrasenya.", HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        // Recorre todos los campos que han fallado y extrae el mensaje de error de cada uno
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        // Unifica tots els errors de validació en un sol text perquè el frontend ho pugui llegir fàcilment
+        String errors = ex.getBindingResult().getAllErrors().stream()
+                .map(error -> error.getDefaultMessage())
+                .collect(Collectors.joining(" | "));
+        return buildErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> handleMessageNotReadable(HttpMessageNotReadableException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", "El format de les dades enviades (JSON) no és correcte.");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return buildErrorResponse("El format de les dades enviades (JSON) no és correcte.", HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleNotFound(EntityNotFoundException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", "El recurs sol·licitat no existeix a la base de dades.");
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        return buildErrorResponse("El recurs sol·licitat no existeix a la base de dades.", HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, String>> handleDataIntegrity(DataIntegrityViolationException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", "Conflicte de dades: Aquesta informació ja existeix (ex. DNI o Email duplicat) o està sent utilitzada.");
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        String msg = ex.getMessage();
+
+        if (msg != null && msg.contains("Error:")) {
+            return buildErrorResponse(msg, HttpStatus.CONFLICT);
+        }
+        else if (msg != null && msg.toLowerCase().contains("constraint")) {
+            return buildErrorResponse("Error de BD: Conflicte d'ID o restricció. Si has creat taules manualment, l'Auto-Increment s'ha dessincronitzat.", HttpStatus.CONFLICT);
+        }
+
+        return buildErrorResponse("Conflicte de dades: Aquesta informació ja existeix o està sent utilitzada per un altre registre.", HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, String>> handleAccessDenied(AccessDeniedException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", "Accés denegat. No tens els permisos necessaris per realitzar aquesta acció.");
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        return buildErrorResponse("Accés denegat. No tens els permisos necessaris per realitzar aquesta acció.", HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<Map<String, String>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", "Mètode HTTP no permès per a aquesta ruta.");
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(response);
+        return buildErrorResponse("Mètode HTTP no permès per a aquesta ruta.", HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
         Map<String, String> response = new HashMap<>();
         response.put("error", "S'ha produït un error intern al servidor.");
-        response.put("details", ex.getMessage()); // Muestra el mensaje técnico real para poder depurarlo
+        response.put("details", ex.getMessage()); // Només per depuració
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
-    // --- EXCEPCIONES PERSONALIZADAS DE NEGOCIO ---
+    // --- EXCEPCIONS PERSONALITZADES DE NEGOCI ---
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleResourceNotFound(ResourceNotFoundException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(TableNotAvailableException.class)
     public ResponseEntity<Map<String, String>> handleTableNotAvailable(TableNotAvailableException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(InvalidReservationDateException.class)
     public ResponseEntity<Map<String, String>> handleInvalidReservationDate(InvalidReservationDateException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+
+    private ResponseEntity<Map<String, String>> buildErrorResponse(String message, HttpStatus status) {
         Map<String, String> response = new HashMap<>();
-        response.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        response.put("error", message);
+        return ResponseEntity.status(status).body(response);
     }
 }
