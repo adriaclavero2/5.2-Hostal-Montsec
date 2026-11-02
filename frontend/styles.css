@@ -1,0 +1,169 @@
+/* ==========================================
+   GLOBAL VARIABLES
+   ========================================== */
+:root {
+    --bg-main: #f4f6f9;
+    --bg-white: #ffffff;
+    --brand-success: #198754;
+    --brand-danger: #dc3545;
+    --brand-dark: #212529;
+    --box-bg: #f8f9fa;
+    --box-border: #dee2e6;
+    
+    /* Variables for the table map */
+    --mesa-disponible-bg: #d1e7dd;
+    --mesa-disponible-border: #0f5132;
+    --mesa-ocupada-bg: #f8d7da;
+    --mesa-ocupada-border: #842029;
+}
+
+/* ==========================================
+   GENERAL STYLES
+   ========================================== */
+body {
+    background-color: var(--bg-main);
+    color: #333;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ==========================================
+   AUTHENTICATION LAYOUTS (LOGIN / REGISTER)
+   ========================================== */
+.page-auth {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-main);
+}
+
+.auth-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 600px;
+    border: none;
+    border-top: 4px solid var(--brand-success);
+    border-radius: 0.5rem;
+}
+
+/* ==========================================
+   HERO SECTIONS (RESERVATIONS)
+   ========================================== */
+.hero-reservas {
+    background: var(--brand-success);
+    color: var(--bg-white);
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================================
+   CUSTOM COMPONENTS
+   ========================================== */
+.payment-box {
+    background-color: var(--box-bg);
+    border: 1px solid var(--box-border);
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
+/* Soft shadows for cards */
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* ==========================================
+   TABLE MAP (INDOORS AND TERRACE)
+   ========================================== */
+.zona-interior, .zona-terraza {
+    background-color: var(--bg-white);
+    border-radius: 12px;
+    border: 1px solid var(--box-border);
+}
+
+.mapa-grid {
+    display: grid;
+    /* Creates a responsive grid that automatically adapts the tables */
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 1.5rem;
+}
+
+.taula-plano {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.taula-plano:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Table states */
+.taula-plano.disponible {
+    background-color: var(--mesa-disponible-bg);
+    border-color: var(--mesa-disponible-border);
+    color: var(--mesa-disponible-border);
+}
+
+.taula-plano.ocupada {
+    background-color: var(--mesa-ocupada-bg);
+    border-color: var(--mesa-ocupada-border);
+    color: var(--mesa-ocupada-border);
+    opacity: 0.85;
+}
+
+/* Table texts */
+.taula-numero {
+    font-weight: bold;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.taula-pax {
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* ==========================================
+   ADMINISTRATION PANEL
+   ========================================== */
+.admin-header {
+    background: var(--brand-dark);
+    color: var(--bg-white);
+    padding: 2.5rem 0;
+    margin-bottom: 2rem;
+    border-bottom: 5px solid var(--brand-danger); /* Distinctive red line */
+}
+
+/* Admin Tabs styling */
+.nav-pills .nav-link {
+    color: #495057;
+    transition: all 0.2s ease;
+}
+
+.nav-pills .nav-link:hover {
+    background-color: #e9ecef;
+}
+
+.nav-pills .nav-link.active {
+    background-color: var(--brand-danger);
+    color: white;
+}
+
+/* Table improvements */
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}

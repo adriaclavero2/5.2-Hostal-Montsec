@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostal Montsec | Panell d'Administració</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+    <!-- NAVEGACIÓN -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="bi bi-shield-lock"></i> Hostal Montsec - ADMIN</a>
+            <div class="d-flex gap-2">
+                <a href="index.html" class="btn btn-outline-light">Veure Web</a>
+                <button type="button" class="btn btn-danger" id="logoutBtn">Tancar Sessió</button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="admin-header text-center shadow-sm">
+        <div class="container">
+            <h1 class="h3 fw-bold mb-1"><i class="bi bi-gear-fill"></i> Panell de Control Central</h1>
+            <p class="mb-0 text-white-50 small">Vista de gestió exclusiva per al personal de l'hostal.</p>
+        </div>
+    </header>
+
+    <main class="container mb-5 flex-grow-1">
+        
+        <ul class="nav nav-pills mb-3" id="adminTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-bold" id="reserves-tab" data-bs-toggle="pill" data-bs-target="#reserves-pane" type="button" role="tab">
+                    <i class="bi bi-calendar-check me-1"></i> Gestió de Reserves
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold" id="clients-tab" data-bs-toggle="pill" data-bs-target="#clients-pane" type="button" role="tab" onclick="AdminModule.loadAllUsers()">
+                    <i class="bi bi-people-fill me-1"></i> Gestió de Clients
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold" id="taules-tab" data-bs-toggle="pill" data-bs-target="#taules-pane" type="button" role="tab" onclick="AdminModule.loadAllTables()">
+                    <i class="bi bi-grid-3x3-gap-fill me-1"></i> Gestió de Taules
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <!-- TAB WEB CMS -->
+                <button class="nav-link fw-bold" id="cms-tab" data-bs-toggle="pill" data-bs-target="#cms-pane" type="button" role="tab" onclick="CmsModule.loadAdminContent()">
+                    <i class="bi bi-file-earmark-text me-1"></i> Gestió Web (CMS)
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="adminTabsContent">
+            
+            <!-- TAB 1: RESERVAS -->
+            <div class="tab-pane fade show active" id="reserves-pane" role="tabpanel" aria-labelledby="reserves-tab">
+                <section class="card shadow border-0">
+                    <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                        <h2 class="h5 mb-0 fw-bold text-danger"><i class="bi bi-list-ul"></i> Totes les Reserves</h2>
+                        <div class="d-flex align-items-center gap-2">
+                            <select id="adminStatusFilter" class="form-select form-select-sm w-auto" onchange="ReservationModule.resetAdminPage()">
+                                <option value="">Tots els Estats</option>
+                                <option value="CONFIRMED">Confirmades</option>
+                                <option value="PENDING">Pendents</option>
+                                <option value="CANCELLED">Cancel·lades</option>
+                            </select>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="ReservationModule.loadAdminReservations()"><i class="bi bi-arrow-clockwise"></i> Actualitzar</button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0"><div id="adminReservasContainer"><div class="text-center py-5"><div class="spinner-border text-danger" role="status"></div></div></div></div>
+                    <div class="card-footer bg-light d-flex justify-content-between align-items-center py-3">
+                        <span id="adminResPageInfo" class="text-muted small fw-bold">Pàgina 1 de 1</span>
+                        <div class="btn-group">
+                            <button id="adminResPrevBtn" class="btn btn-sm btn-outline-secondary" onclick="ReservationModule.changeAdminPage(-1)">Anterior</button>
+                            <button id="adminResNextBtn" class="btn btn-sm btn-outline-secondary" onclick="ReservationModule.changeAdminPage(1)">Següent</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 2: CLIENTES -->
+            <div class="tab-pane fade" id="clients-pane" role="tabpanel" aria-labelledby="clients-tab">
+                <section class="card shadow border-0">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0 fw-bold text-danger"><i class="bi bi-person-lines-fill"></i> Registre de Clients</h2>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="AdminModule.loadAllUsers()"><i class="bi bi-arrow-clockwise"></i> Actualitzar</button>
+                    </div>
+                    <div class="card-body p-0"><div id="adminClientsContainer"><div class="text-center py-5"><div class="spinner-border text-danger" role="status"></div></div></div></div>
+                </section>
+            </div>
+
+            <!-- TAB 3: TAULES -->
+            <div class="tab-pane fade" id="taules-pane" role="tabpanel" aria-labelledby="taules-tab">
+                <section class="card shadow border-0">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0 fw-bold text-danger"><i class="bi bi-grid-3x3-gap-fill"></i> Distribució de l'Hostal</h2>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-success me-1" onclick="AdminModule.openTableModal()"><i class="bi bi-plus-circle"></i> Nova Taula</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="AdminModule.loadAllTables()"><i class="bi bi-arrow-clockwise"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0"><div id="adminTablesContainer"><div class="text-center py-5"><div class="spinner-border text-danger" role="status"></div></div></div></div>
+                </section>
+            </div>
+
+            <!-- TAB 4: WEB CMS -->
+            <div class="tab-pane fade" id="cms-pane" role="tabpanel" aria-labelledby="cms-tab">
+                <section class="card shadow border-0">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0 fw-bold text-danger"><i class="bi bi-laptop"></i> Modificador de Contingut (CMS)</h2>
+                        <button type="submit" form="cmsForm" class="btn btn-sm btn-success">
+                            <i class="bi bi-save"></i> Desar Canvis a la Web
+                        </button>
+                    </div>
+                    <div class="card-body bg-light">
+                        <div id="cmsAlert" class="alert d-none"></div>
+                        
+                        <form id="cmsForm">
+                            <!-- ACORDEÓN PARA MANTENERLO ORDENADO -->
+                            <div class="accordion shadow-sm" id="cmsAccordion">
+                                
+                                <!-- 1. Portada -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header"><button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#cmsHero">1. Portada (Hero)</button></h2>
+                                    <div id="cmsHero" class="accordion-collapse collapse show" data-bs-parent="#cmsAccordion">
+                                        <div class="accordion-body">
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted small fw-bold">Títol Principal</label>
+                                                <input type="text" class="form-control cms-input" id="edit_HERO_TITLE" required>
+                                            </div>
+                                            <div>
+                                                <label class="form-label text-muted small fw-bold">Subtítol</label>
+                                                <input type="text" class="form-control cms-input" id="edit_HERO_SUBTITLE" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 2. Història -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#cmsHistory">2. La Nostra Història</button></h2>
+                                    <div id="cmsHistory" class="accordion-collapse collapse" data-bs-parent="#cmsAccordion">
+                                        <div class="accordion-body">
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label text-muted small fw-bold">Títol</label>
+                                                    <input type="text" class="form-control cms-input" id="edit_HISTORY_TITLE" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label text-muted small fw-bold">Subtítol Destacat</label>
+                                                    <input type="text" class="form-control cms-input" id="edit_HISTORY_SUBTITLE" required>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted small fw-bold">Paràgraf 1</label>
+                                                <textarea class="form-control cms-input" id="edit_HISTORY_P1" rows="3" required></textarea>
+                                            </div>
+                                            <div>
+                                                <label class="form-label text-muted small fw-bold">Paràgraf 2</label>
+                                                <textarea class="form-control cms-input" id="edit_HISTORY_P2" rows="3" required></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 3. Menús -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#cmsMenus">3. Menús (Preus i Descripcions)</button></h2>
+                                    <div id="cmsMenus" class="accordion-collapse collapse" data-bs-parent="#cmsAccordion">
+                                        <div class="accordion-body">
+                                            <div class="mb-4">
+                                                <label class="form-label text-muted small fw-bold">Títol de la Secció</label>
+                                                <input type="text" class="form-control cms-input" id="edit_MENU_MAIN_TITLE" required>
+                                            </div>
+                                            <div class="row g-4">
+                                                <div class="col-md-4 border-end">
+                                                    <h6 class="text-success fw-bold">Menú Diari</h6>
+                                                    <input type="text" class="form-control mb-2 cms-input border-success" id="edit_PRICE_MENU_DIARI" placeholder="Preu (ex. 18,50 €)" required>
+                                                    <textarea class="form-control cms-input" id="edit_DESC_MENU_DIARI" rows="3" placeholder="Descripció..."></textarea>
+                                                </div>
+                                                <div class="col-md-4 border-end">
+                                                    <h6 class="text-warning fw-bold">Menú Cap de Setmana</h6>
+                                                    <input type="text" class="form-control mb-2 cms-input border-warning" id="edit_PRICE_MENU_CAP_SETMANA" placeholder="Preu (ex. 28,00 €)" required>
+                                                    <textarea class="form-control cms-input" id="edit_DESC_MENU_CAP_SETMANA" rows="3" placeholder="Descripció..."></textarea>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <h6 class="text-danger fw-bold">Menú Degustació</h6>
+                                                    <input type="text" class="form-control mb-2 cms-input border-danger" id="edit_PRICE_MENU_DEGUSTACIO" placeholder="Preu (ex. 45,00 €)" required>
+                                                    <textarea class="form-control cms-input" id="edit_DESC_MENU_DEGUSTACIO" rows="3" placeholder="Descripció..."></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 4. Instagram -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#cmsIg">4. Galeria / Instagram</button></h2>
+                                    <div id="cmsIg" class="accordion-collapse collapse" data-bs-parent="#cmsAccordion">
+                                        <div class="accordion-body">
+                                            <div class="mb-4">
+                                                <label class="form-label text-muted small fw-bold">Títol de la Galeria</label>
+                                                <input type="text" class="form-control cms-input" id="edit_IG_TITLE" required>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label text-muted small fw-bold">URL Imatge 1</label>
+                                                    <input type="url" class="form-control cms-input" id="edit_IG_IMG_1" placeholder="https://...">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label text-muted small fw-bold">URL Imatge 2</label>
+                                                    <input type="url" class="form-control cms-input" id="edit_IG_IMG_2" placeholder="https://...">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label text-muted small fw-bold">URL Imatge 3</label>
+                                                    <input type="url" class="form-control cms-input" id="edit_IG_IMG_3" placeholder="https://...">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label text-muted small fw-bold">URL Imatge 4</label>
+                                                    <input type="url" class="form-control cms-input" id="edit_IG_IMG_4" placeholder="https://...">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted mt-2 d-block"><i class="bi bi-info-circle"></i> Pots utilitzar enllaços de Unsplash o imatges penjades a internet.</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modals de Edición Omitidos en este snippet por longitud, MANTÉN LOS MISMOS QUE TENÍAS (Reservation, User, Table) -->
+    <!-- MODAL 1: EDITAR RESERVA -->
+    <div class="modal fade" id="editReservationModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content border-top border-danger border-4"><div class="modal-header"><h3 class="modal-title h5 fw-bold">Modificar Reserva #<span id="editResIdTxt"></span></h3><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tancar"></button></div><form id="editReservationForm" novalidate><input type="hidden" id="editResId"><div class="modal-body"><div class="mb-3"><label for="editResDate" class="form-label">Data</label><input type="date" class="form-control" id="editResDate" required></div><div class="row g-3 mb-3"><div class="col-7"><label for="editResTime" class="form-label">Torn (Hora)</label><select class="form-select" id="editResTime" required><option value="13:00:00">13:00 (Dinar - Torn 1)</option><option value="15:00:00">15:00 (Dinar - Torn 2)</option><option value="20:00:00">20:00 (Sopar - Torn 1)</option><option value="22:00:00">22:00 (Sopar - Torn 2)</option></select></div><div class="col-5"><label for="editResPax" class="form-label">Comensals</label><input type="number" class="form-control" id="editResPax" min="1" max="10" required></div></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel·lar</button><button type="submit" class="btn btn-danger">Desar Canvis</button></div></form></div></div></div>
+    <!-- MODAL 2: EDITAR USUARIO -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content border-top border-dark border-4"><div class="modal-header"><h3 class="modal-title h5 fw-bold">Modificar Client</h3><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tancar"></button></div><form id="editUserForm" novalidate><input type="hidden" id="editUserId"><div class="modal-body"><div class="row g-3 mb-3"><div class="col-md-6"><label for="editUserName" class="form-label">Nom</label><input type="text" class="form-control" id="editUserName" required></div><div class="col-md-6"><label for="editUserSurname" class="form-label">Cognoms</label><input type="text" class="form-control" id="editUserSurname" required></div></div><div class="row g-3 mb-3"><div class="col-md-6"><label for="editUserPhone" class="form-label">Telèfon</label><input type="tel" class="form-control" id="editUserPhone" required></div><div class="col-md-6"><label for="editUserCity" class="form-label">Població</label><input type="text" class="form-control" id="editUserCity" required></div></div><div class="mb-3"><label for="editUserRole" class="form-label">Rol del Sistema</label><select class="form-select" id="editUserRole" required><option value="USER">USER (Client Estàndard)</option><option value="ADMIN">ADMIN (Administrador)</option></select></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel·lar</button><button type="submit" class="btn btn-dark">Desar Client</button></div></form></div></div></div>
+    <!-- MODAL 3: CREAR/EDITAR TAULA -->
+    <div class="modal fade" id="editTableModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content border-top border-success border-4"><div class="modal-header"><h3 class="modal-title h5 fw-bold" id="tableModalTitle">Nova Taula</h3><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tancar"></button></div><form id="editTableForm" novalidate><input type="hidden" id="editTableId"><div class="modal-body"><div class="row g-3 mb-3"><div class="col-md-6"><label for="editTableNum" class="form-label">Número de Taula</label><input type="number" class="form-control" id="editTableNum" min="1" required></div><div class="col-md-6"><label for="editTablePax" class="form-label">Capacitat (Pax)</label><input type="number" class="form-control" id="editTablePax" min="1" max="20" required></div></div><div class="mb-3"><label for="editTableLoc" class="form-label">Ubicació</label><select class="form-select" id="editTableLoc" required><option value="INSIDE">Saló Interior</option><option value="TERRACE">Terrassa Exterior</option></select></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel·lar</button><button type="submit" class="btn btn-success">Desar Taula</button></div></form></div></div></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
